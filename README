@@ -1,0 +1,36 @@
+MobilePreview
+--------------
+
+Part of:
+
+MobileStudio
+-------------
+A Studio of Applications for the iPhone
+
+Mobile Studio currently includes:
+	*MobileFinder
+	*MobileTextEditor
+	*MobilePreview
+	*More to come
+
+MobileStudio is Copyright 2007 Dallas Brown and Matt Stoker
+http://code.google.com/p/mobilestudio/
+http://code.google.com/p/mobilepreview/
+
+
+MobileFinder is required for Open ability
+http://code.google.com/p/mobilefinder/
+
+
+Thanks to the iPhone Dev Team, stepwhite, nervegas, Erica Sadun, and all the other iPhone hackers for everything, including but not limited to, hacking, code, code examples, icons, etc.
+
+Install Instructions:
+1. Jailbreak iPhone (see http://iphone.fiveforty.net/wiki/index.php/How_to_Escape_Jail)
+2. Install SSH
+	Mac) http://www.kdbdallas.com/index.php/2007/08/04/iphone-ssh-install-for-mac-shell-script/
+	Windows) http://cre.ations.net/blog/post/howto-install-ssh-on-your-iphone
+3. Use SCP (Secure Copy) to upload the apps to your phone.
+	example) scp -r Finder.app root@[iPhone IP Address]:/Applications/
+	note) Remember the default root password is: dottie
+4. Reboot your iPhone
+5. *Optional* Edit /System/Library/CoreServices/SpringBoard.app/DisplayOrder.plist to order the icons on your main screen
