@@ -1,12 +1,11 @@
-#import <CoreFoundation/CoreFoundation.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/CDStructures.h>
+#import <UIKit/UISimpleTableCell.h>
 #import "MobileRSS.h"
+#import "ItemView.h"
 
 @implementation MobileRSS
 
 - (void) applicationDidFinishLaunching: (id) unused
-{	
+{
 	window = [[UIWindow alloc] initWithContentRect:
 		 [UIHardware fullScreenApplicationContentRect]
 	];
@@ -20,14 +19,38 @@
 	[window orderFront: self];
 	[window makeKey: self];
 	[window _setHidden: NO];
+
+	// Transition view
+	transitionView = [[UITransitionView alloc] initWithFrame:rect];
+	[mainView addSubview:transitionView];
 	
-	textView = [[UITextView alloc]
-        initWithFrame: CGRectMake(0.0f, 40.0f, 320.0f, 245.0f - 40.0f)];
-    [textView setEditable:YES];
-    [textView setTextSize:14];
+	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 70.0f)];
+	[navBar showButtonsWithLeftTitle: @"Back" rightTitle: @"Home" leftBack: TRUE];
+    [navBar setBarStyle: 3];
+	[navBar setDelegate: self];
+	[mainView addSubview: navBar];
+	
+	[navBar setPrompt: @"Digg RSS"];
+	
+	_viewTableCol = [[UITableColumn alloc]
+		initWithTitle: @"Feed Items"
+		identifier:@"items"
+		width: rect.size.width
+	];
+
+	_viewTable = [[UITable alloc] initWithFrame: CGRectMake(0.0f, 70.0f, 320.0f, rect.size.height - 70.0f)];
+	[_viewTable addTableColumn: _viewTableCol];
+	[_viewTable setSeparatorStyle: 1];
+	[_viewTable setDelegate: self];
+	[_viewTable setDataSource: self];
 
 	[window setContentView: mainView];
-    [mainView addSubview:textView];
+    [mainView addSubview:_viewTable];
+	
+	[self showProgressHUD:@"Loading..." withWindow:window withView:mainView withRect:CGRectMake(0.0f, 100.0f, 320.0f, 50.0f)];
+
+	_items = [[NSMutableArray alloc] init];
+	_rowCount = 0;
 	
 	URL = @"http://digg.com/rss/index.xml";
 	
@@ -53,6 +76,22 @@
 	}
 }
 
+- (void)showProgressHUD:(NSString *)label withWindow:(UIWindow *)w withView:(UIView *)v withRect:(struct CGRect)rect
+{
+	progress = [[UIProgressHUD alloc] initWithWindow: w];
+	[progress setText: label];
+	[progress drawRect: rect];
+	[progress show: YES];
+	
+	[v addSubview:progress];
+}
+
+- (void)hideProgressHUD
+{
+	[progress show: NO];
+	[progress removeFromSuperview];
+}
+
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     // this method is called when the server has determined that it has enough information to create the NSURLResponse
@@ -73,37 +112,32 @@
 
     // receivedData is declared as a method instance elsewhere
     [_responseData release];
- 
-    // inform the user
-    NSLog(@"Connection failed! Error - %@ %@",
-          [error localizedDescription],
-          [[error userInfo] objectForKey:NSErrorFailingURLStringKey]);
+
+	[self hideProgressHUD];
+
+	alertButton = [NSArray arrayWithObjects:@"Close",nil];
+	alert = [[UIAlertSheet alloc] initWithTitle:@"Error: Connection failed!" buttons:alertButton defaultButtonIndex:0 delegate:self context:nil];
+	[alert setBodyText: [error localizedDescription]];
+	[alert popupAlertAnimated: TRUE];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
 	NSError *err = nil;
 	
-    NSLog(@"Succeeded! Received %d bytes of data",[_responseData length]);
-
 	NSData *data = [_responseData retain];
 	
-	NSString *helperAppName = [[NSString alloc] initWithData:_responseData encoding:[NSString defaultCStringEncoding]];
-	
-	[textView setText: helperAppName];
+    //NSLog(@"Succeeded! Received %d bytes of data",[data length]);
 
 	/* NOTE: This way of doing NSXMLDocument is to work around a problem with the
 	ARM linker. For some reason, it does not see the NSXMLDocument symbol that is defined
 	in the OfficeImport framework. So we resolve the symbol at runtime.
 	Thanks to Lucas Newman for figuring out this workaround.*/
-	NSXMLDocument *xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithXMLString:helperAppName options:NSXMLNodeOptionsNone error:&err] autorelease];
-	//NSXMLDocument *xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:_responseData options:NSXMLNodeOptionsNone error:&err] autorelease];
+	xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:data options:NSXMLNodeOptionsNone error:&err] autorelease];
 
 	[self parseXMLDocument:xmlDoc];
-	
-	NSArray *statusNodes = [[[xmlDoc children] lastObject] children];
-	
-	NSLog([NSString stringWithFormat:@"%d", [statusNodes count]]);
+
+	[self hideProgressHUD];
 
     // release the connection, and the data object
     [connection release];
@@ -113,23 +147,106 @@
 
 - (void) parseXMLDocument:(NSXMLDocument *)document
 {
-	NSError *err=nil;
-	NSXMLElement *thisCity;
+	[_items removeAllObjects];
+	
+	_rowCount = 0;
 
-	NSArray *nodes = [document nodesForXPath:@"/rss/channel/item" error:&err];
+	NSArray *statusNodes = [[[document children] lastObject] children];
+	
+	NSEnumerator *statusNodeEnumerator = [statusNodes objectEnumerator];
+	NSEnumerator *childNodeEnum;
+	NSEnumerator *itemEnum;
+	NSXMLNode *statusNode = nil;
+	NSXMLNode *childNode = nil;
+	NSXMLNode *itemNode = nil;
+	
+	// create a dictionary where content from the status node will be collected
+	//NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
 
-	if ([nodes count] > 0 ) {
-	    thisCity = [nodes objectAtIndex:0];
-		NSLog([thisCity stringValue]);
-	}
-	else
+	//First should be channel
+	while ((statusNode = [statusNodeEnumerator nextObject]))
 	{
-		NSLog(@"Count less than 1");
+		if ([statusNode name] == @"title")
+		{
+			//NSLog([statusNode name]);
+			//[content setValue:[statusNode name] forKey:@"feed"];
+		}
+		else if ([[statusNode children] count] > 0)
+		{
+			//Gives me all the items
+			childNodeEnum = [[statusNode children] objectEnumerator];
+			
+			feedItemTitles = [[NSMutableArray alloc] initWithCapacity: [[statusNode children] count]];
+			feedItemDesc = [[NSMutableArray alloc] initWithCapacity: [[statusNode children] count]];
+
+			while((childNode = [childNodeEnum nextObject]))
+			{
+				itemEnum = [[childNode children] objectEnumerator];
+				
+				while((itemNode = [itemEnum nextObject]))
+				{
+					if ([[itemNode name] isEqualToString:@"title"])
+					{
+						//[content setValue:[itemNode stringValue] forKey:@"title"];
+						[_items addObject: [itemNode stringValue]];
+						[feedItemTitles addObject: [itemNode stringValue]];
+					}
+					else if ([[itemNode name] isEqualToString:@"description"])
+					{
+						//[content setValue:[itemNode stringValue] forKey:@"description"];
+						[feedItemDesc addObject: [itemNode stringValue]];
+					}
+					else if ([[itemNode name] isEqualToString:@"pubDate"])
+					{
+						//[content setValue:[itemNode stringValue] forKey:@"pubDate"];
+					}
+				}
+			}
+		}
 	}
 
-	if (err != nil) {
-	    [self handleError:err];
-	}
+	_rowCount = [_items count];
+	[_viewTable reloadData];
+}
+
+- (void)reloadData {
+	[self parseXMLDocument:xmlDoc];
+}
+
+- (void)setDelegate:(id)delegate {
+	_delegate = delegate;
+}
+
+- (int)numberOfRowsInTable:(UITable *)table {
+	return _rowCount;
+}
+
+- (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col {
+	UIImageAndTextTableCell *cell = [[UIImageAndTextTableCell alloc] init];
+	[cell setTitle: [_items objectAtIndex: row]];
+	[cell setImage: [UIImage imageAtPath:@"/Applications/RSS.app/bullet.png"]];
+	
+	return cell;
+}
+
+- (void) alertSheet: (UIAlertSheet*)sheet buttonClicked:(int)button
+{
+	[sheet dismissAnimated: TRUE];
+}
+
+- (void)tableSelectionDidChange:(int)row {
+	
+
+	//[transitionView transition:1 fromView:mainView toView:itemView];
+	//[window setContentView: itemView]; 
+}
+
+- (BOOL)table:(UITable *)aTable canSelectRow:(int)row {
+	//[self tableSelectionDidChange: row];
+	ItemView *_itemView = [[ItemView alloc] initWithFrame:[UIHardware fullScreenApplicationContentRect] atIndex:row withFeedItemTitles:feedItemTitles withFeedItemDesc:feedItemDesc];
+	[transitionView transition:1 fromView:mainView toView:_itemView];
+	//[window setContentView: _itemView];
+	return YES;
 }
 
 - (void) applicationWillSuspend
@@ -142,5 +259,20 @@
 	NSLog(@"Error: %@", [NSString stringWithFormat:@"%d", [err localizedFailureReason]]);
 	exit(0);
 }
+
+/*- (NSMethodSignature*)methodSignatureForSelector:(SEL)selector {
+ NSLog(@"Requested method for selector: %@", NSStringFromSelector(selector));
+ return [super methodSignatureForSelector:selector];
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+NSLog(@"Request for selector: %@", NSStringFromSelector(aSelector));
+return [super respondsToSelector:aSelector];
+}
+
+- (void)forwardInvocation:(NSInvocation *)anInvocation {
+ NSLog(@"Called from: %@", NSStringFromSelector([anInvocation selector]));
+[super forwardInvocation:anInvocation];
+}*/
 
 @end
