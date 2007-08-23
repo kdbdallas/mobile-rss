@@ -1,10 +1,10 @@
 CC=arm-apple-darwin-cc
 LD=$(CC)
-LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit
+LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework OfficeImport
 
 all:	RSS package
 
-RSS:	src/main.o src/MobileRSS.o
+RSS:	source/main.o source/MobileRSS.o source/ItemView.m
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o:	%.m
@@ -19,9 +19,9 @@ RSS:	src/main.o src/MobileRSS.o
 package:
 	rm -rf build
 	mkdir build
-	cp -r ./src/RSS.app ./build
+	cp -r ./source/RSS.app ./build
 	mv RSS ./build/RSS.app
 
 clean:
-	rm -f src/*.o RSS
+	rm -f source/*.o RSS
 	rm -rf ./build
