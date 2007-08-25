@@ -8,15 +8,19 @@
 #import <UIKit/UIApplication.h>
 #import <UIKit/UITransitionView.h>
 #import <UIKit/UITextView.h>
-#import "MobileRSS.h"
+#import <UIKit/UINavigationBar.h>
 
 @interface ItemView : UIView
 {
 	UINavigationBar *navBar;
 	UITextView *textView;
+	NSArray *_feedItemTitles;
+	NSArray *_feedItemDesc;
 }
 
-- (id)initWithFrame:(CGRect)frame atIndex:(int)row withFeedItemTitles:(NSArray *)feedItemTitles withFeedItemDesc:(NSArray *)feedItemDesc;
-//- (void)dealloc;
+- (id)initWithFrame:(CGRect)frame;
+- (void)dealloc;
+- (void)fillWithData:(NSArray *)feedItemTitles withFeedItemDesc:(NSArray *)feedItemDesc;
+- (void)showDataAtIndex:(int)row;
 
 @end
