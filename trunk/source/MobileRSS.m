@@ -45,9 +45,9 @@
 	[navBar setDelegate: self];
 	
 
-	UIImage* btnImage = [UIImage applicationImageNamed:@"info_icon.png"];
+	UIImage *btnImage = [UIImage applicationImageNamed:@"info_icon.png"];
 
-	UIPushButton* pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	UIPushButton *pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
 	[pushButton setFrame: CGRectMake(0.0, 0.0, 50.0, 30.0)];
 	[pushButton setDrawsShadow: NO];
 	[pushButton setEnabled:YES];
@@ -106,6 +106,10 @@
 				return [NSString stringWithString:[settingsDict valueForKey: currKey]];
 			}
 		}
+	}
+	else
+	{
+		return @"http://digg.com/rss/index.xml";
 	}
 }
 
