@@ -1,5 +1,5 @@
 #import <UIKit/UIKit.h>
-#import "MobileRSS.h"
+#import "RSS.h"
 
 int main(int argc, char *argv[])
 {

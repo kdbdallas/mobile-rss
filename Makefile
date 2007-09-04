@@ -1,10 +1,10 @@
 CC=arm-apple-darwin-cc
 LD=$(CC)
-LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework OfficeImport -framework WebCore
+LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework OfficeImport -framework WebCore -framework CoreGraphics
 
 all:	RSS package
 
-RSS:	source/main.o source/MobileRSS.o
+RSS:	source/main.o source/RSS.o source/EyeCandy.o source/SettingsView.o source/Feeds.o source/ItemView.o source/toolBar.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o:	%.m

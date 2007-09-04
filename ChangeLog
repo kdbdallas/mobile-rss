@@ -1,0 +1,24 @@
+Change Log
+-----------
+
+Version 1.0
+-----------
+1) Complete Code Rewrite
+	a) Faster speeds
+	b) Better memory management
+	c) Cleaner code
+	e) Lots of comments
+	f) etc
+2) Multiple Feed Support
+3) Increased Support for non-standard RSS Feeds
+4) Splash Screen
+
+
+Version 0.5.1
+-------------
+Fixed bug in program startup that caused a crash if you didn't have a valid feed plist
+
+
+Version 0.5
+-----------
+Initial release
