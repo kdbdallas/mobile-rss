@@ -5,7 +5,7 @@
 - (void) showStandardAlert:(NSString *)title closeBtnTitle:(NSString *)closeTitle withError:(NSError *)error
 {
 	alertButton = [NSArray arrayWithObjects:@"Close",nil];
-	alert = [[UIAlertSheet alloc] initWithTitle:@"Error: Connection failed!" buttons:alertButton defaultButtonIndex:0 delegate:self context:nil];
+	alert = [[UIAlertSheet alloc] initWithTitle:title buttons:alertButton defaultButtonIndex:0 delegate:self context:nil];
 	[alert setBodyText: [error localizedDescription]];
 	[alert popupAlertAnimated: TRUE];
 }
@@ -13,7 +13,7 @@
 - (void) showStandardAlertWithString:(NSString *)title closeBtnTitle:(NSString *)closeTitle withError:(NSString *)error
 {
 	alertButton = [NSArray arrayWithObjects:@"Close",nil];
-	alert = [[UIAlertSheet alloc] initWithTitle:@"Error: Connection failed!" buttons:alertButton defaultButtonIndex:0 delegate:self context:nil];
+	alert = [[UIAlertSheet alloc] initWithTitle:title buttons:alertButton defaultButtonIndex:0 delegate:self context:nil];
 	[alert setBodyText: error];
 	[alert popupAlertAnimated: TRUE];
 }
