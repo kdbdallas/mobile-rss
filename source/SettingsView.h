@@ -7,6 +7,7 @@
 #import <UIKit/UIPreferencesTable.h>
 #import <UIKit/UIPreferencesTableCell.h>
 #import <UIKit/UIPreferencesTextTableCell.h>
+#import <UIKit/UITextTraits.h>
 #import "EyeCandy.h"
 
 @interface SettingsView : UIView {

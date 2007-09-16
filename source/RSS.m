@@ -193,7 +193,7 @@
 		// Setup ItemView View
 		struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		rect.origin.x = rect.origin.y = 0.0f;
-
+		NSLog(@"%@", [[_content objectAtIndex:row] retain]);
 		_itemViewView = [[ItemView alloc] initWithFrame:rect withItem: [[_content objectAtIndex:row] retain] withRow: row];
 		[_itemViewView setDelegate: self];
 

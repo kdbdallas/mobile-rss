@@ -4,7 +4,7 @@ LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit 
 
 all:	RSS package
 
-RSS:	source/main.o source/RSS.o source/EyeCandy.o source/SettingsView.o source/Feeds.o source/ItemView.o source/toolBar.o
+RSS:	source/main.o source/RSS.o source/EyeCandy.o source/SettingsView.o source/Feeds.o source/ItemView.o source/toolBar.o source/EditorKeyboard.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o:	%.m
