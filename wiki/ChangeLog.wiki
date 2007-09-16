@@ -1,0 +1,36 @@
+#labels Featured,Phase-Design
+Change Log
+-----------
+
+Version 1.3
+-----------
+1) Auto converts feed:// to http://
+2) Added support for Yahoo's feed layout
+3) Fixed bug where certain feeds (aka: Slashdot) wouldn't show the feed name under item view
+4) Fixed it so if the feed doesn't contain text for an item, the app doesn't crash and instead tells the user that no text was supplied and to click the visit link to see the item.
+
+
+Version 1.0
+-----------
+1) Complete Code Rewrite
+	a) Faster speeds
+	b) Better memory management
+	c) Cleaner code
+	e) Lots of comments
+	f) etc
+2) Multiple Feed Support
+3) Increased Support for non-standard RSS Feeds
+4) Splash Screen
+
+
+Version 0.5.1
+-------------
+Fixed bug in program startup that caused a crash if you didn't have a valid feed plist
+
+
+Version 0.5
+-----------
+Initial release
+
+ 
+ 
