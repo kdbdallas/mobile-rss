@@ -40,15 +40,38 @@
 	
 	//NSLog(@"%@", xmlDoc);
 	
+	NSEnumerator *statusNodeEnumerator;
+	
 	statusNodes = [[[[xmlDoc children] lastObject] children] retain];
 	
-	NSEnumerator *statusNodeEnumerator = [statusNodes objectEnumerator];
+	if (!statusNodes)
+	{
+		statusNode = [xmlDoc rootElement];
+		
+		if (![[statusNode name] isEqualToString: @"channel"])
+		{
+			childNodeEnum = [[statusNode children] objectEnumerator];
+
+			while ((childNode = [childNodeEnum nextObject]))
+			{
+				if ([[childNode name] isEqualToString: @"channel"])
+				{
+					statusNodeEnumerator = [[childNode children] objectEnumerator];
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		statusNodeEnumerator = [statusNodes objectEnumerator];
+	}
+	
+	groupTitle = @"";
 	
 	//First should be channel
 	while ((statusNode = [statusNodeEnumerator nextObject]))
 	{
-		groupTitle = @"";
-		
 		//Gives me all the items
 		childNodeEnum = [[statusNode children] objectEnumerator];
 		
@@ -103,7 +126,7 @@
 			}
 		}
 		
-		// This is because sites like Slashdot think it is fun to break the mold
+		// This is because sites like Slashdot and Yahoo think it is fun to break the mold
 		if ([[statusNode name] isEqualToString:@"item"])
 		{
 			NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];

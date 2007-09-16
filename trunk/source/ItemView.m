@@ -48,7 +48,15 @@
 	}
 
 	[fullText appendString:@"<br/><br/>"];
-	[fullText appendString:[[item objectForKey:@"ItemDesc"] retain]];
+	
+	if ([[item objectForKey:@"ItemDesc"] retain] != nil)
+	{
+		[fullText appendString:[[item objectForKey:@"ItemDesc"] retain]];
+	}
+	else
+	{
+		[fullText appendString:@"<i>The feed did not supply the text of this item. To view this item please click the Visit Link button above.</i>"];
+	}
 
 	[textView setHTML: fullText];
 	
