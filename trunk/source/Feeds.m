@@ -16,7 +16,6 @@
 	{
 		_eyeCandy = [[EyeCandy alloc] init];
 		[_eyeCandy showStandardAlertWithString: @"An Error Occurred" closeBtnTitle: @"Close" withError: [error localizedFailureReason]];
-		[_eyeCandy release];
 	}
 	
 	return [self processXML: rssData];
@@ -32,6 +31,8 @@
 	NSXMLNode *itemNode = nil;
 	BOOL hasTitle = false;
 	NSString *groupTitle;
+	BOOL wasAtom = false;
+	NSArray *nodeAttrs;
 
 	/* NOTE: This way of doing NSXMLDocument is to work around a problem with the
 	ARM linker. For some reason, it does not see the NSXMLDocument symbol that is defined
@@ -48,14 +49,19 @@
 	{
 		statusNode = [xmlDoc rootElement];
 		
-		if (![[statusNode name] isEqualToString: @"channel"])
+		if ((![[statusNode name] isEqualToString: @"channel"]) || (![[statusNode name] isEqualToString: @"feed"]))
 		{
 			childNodeEnum = [[statusNode children] objectEnumerator];
 
 			while ((childNode = [childNodeEnum nextObject]))
 			{
-				if ([[childNode name] isEqualToString: @"channel"])
+				if (([[childNode name] isEqualToString: @"channel"]) || ([[childNode name] isEqualToString: @"feed"]))
 				{
+					if ([[statusNode name] isEqualToString: @"feed"])
+					{
+						wasAtom = true;
+					}
+
 					statusNodeEnumerator = [[childNode children] objectEnumerator];
 					break;
 				}
@@ -72,95 +78,196 @@
 	//First should be channel
 	while ((statusNode = [statusNodeEnumerator nextObject]))
 	{
-		//Gives me all the items
-		childNodeEnum = [[statusNode children] objectEnumerator];
+		//NSLog(@"%@", statusNode);
 		
-		while((childNode = [childNodeEnum nextObject]))
+		NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
+		
+		if ([[statusNode name] isEqualToString:@"title"] && hasTitle == false)
 		{
-			NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
+			[content setValue:[statusNode stringValue] forKey:@"feed"];
 
-			if ([[childNode name] isEqualToString:@"title"] && hasTitle == false)
-			{
-				[content setValue:[childNode stringValue] forKey:@"feed"];
-				
-				groupTitle = [childNode stringValue];
-			}
+			groupTitle = [statusNode stringValue];
+		}
+
+		if ([[statusNode name] isEqualToString: @"entry"])
+		{
+			//NSLog(@"ccc: %@", [statusNode name]);
 			
-			itemEnum = [[childNode children] objectEnumerator];
+			childNodeEnum = [[statusNode children] objectEnumerator];
 
-			while((itemNode = [itemEnum nextObject]))
+			while((childNode = [childNodeEnum nextObject]))
 			{
-				if ([[itemNode name] isEqualToString:@"title"])
+				//NSLog(@"ccc: %@", [childNode name]);
+
+				if ([[childNode name] isEqualToString:@"title"])
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemTitle"];
+					NSString *tmpValue;
+					
+					tmpValue = [childNode stringValue];
+					
+					if ([tmpValue isEqualToString: @""])
+					{
+						tmpValue = @"<No Title>";
+					}
+					
+					[content setValue:tmpValue forKey:@"ItemTitle"];
 				}
-				else if ([[itemNode name] isEqualToString:@"description"])
+				else if ([[childNode name] isEqualToString:@"description"] || [[childNode name] isEqualToString:@"content"] || [[childNode name] isEqualToString:@"summary"])
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemDesc"];
+					[content setValue:[childNode stringValue] forKey:@"ItemDesc"];
 				}
-				else if ([[itemNode name] isEqualToString:@"pubDate"] || [[itemNode name] isEqualToString:@"dc:date"])
+				else if ([[childNode name] isEqualToString:@"published"])
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemDates"];
+					[content setValue:[childNode stringValue] forKey:@"ItemDates"];
 				}
-				else if ([[itemNode name] isEqualToString:@"link"])
+				else if ([[childNode name] isEqualToString:@"link"])
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemLinks"];
+					if ([[childNode stringValue] isEqualToString: nil])
+					{
+						[content setValue:[childNode stringValue] forKey:@"ItemLinks"];
+					}
+					else
+					{
+						NSXMLNode *linkTypeNode = [childNode attributeForName:@"rel"];
+						
+						if ([[linkTypeNode stringValue] isEqualToString: @"alternate"])
+						{
+							childNode = [childNode attributeForName:@"href"];
+							[content setValue:[childNode stringValue] forKey:@"ItemLinks"];
+						}
+					}
 				}
 				else
 				{
 					//NSLog(@"What arent we getting name: %@", [itemNode name]);
 					//NSLog(@"What arent we getting value: %@", [itemNode stringValue]);
-				}
-			}
-
-			if (([[childNode name] isEqualToString:@"title"] && hasTitle == false) || [[childNode name] isEqualToString:@"item"])
-			{
-				[content setValue:groupTitle forKey:@"ItemsFeed"];
-				
-				[self groupItems: content];
-				
-				if ([[childNode name] isEqualToString:@"title"])
-				{
-					hasTitle = true;
 				}
 			}
 		}
-		
-		// This is because sites like Slashdot and Yahoo think it is fun to break the mold
-		if ([[statusNode name] isEqualToString:@"item"])
+		else
 		{
-			NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
-
+			//Gives me all the items
 			childNodeEnum = [[statusNode children] objectEnumerator];
-
-			while((itemNode = [childNodeEnum nextObject]))
+		
+			while((childNode = [childNodeEnum nextObject]))
 			{
-				if ([[itemNode name] isEqualToString:@"title"])
+				//NSLog(@"%@", childNode);
+
+				NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
+
+				if ([[childNode name] isEqualToString:@"title"] && hasTitle == false)
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemTitle"];
+					[content setValue:[childNode stringValue] forKey:@"feed"];
+			
+					groupTitle = [childNode stringValue];
 				}
-				else if ([[itemNode name] isEqualToString:@"description"])
+		
+				itemEnum = [[childNode children] objectEnumerator];
+
+				while((itemNode = [itemEnum nextObject]))
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemDesc"];
+					if ([[itemNode name] isEqualToString:@"title"])
+					{
+						NSString *tmpValue;
+
+						tmpValue = [itemNode stringValue];
+
+						if ([tmpValue isEqualToString: @""])
+						{
+							tmpValue = @"<No Title>";
+						}
+
+						[content setValue:tmpValue forKey:@"ItemTitle"];
+					}
+					else if ([[itemNode name] isEqualToString:@"description"] || [[itemNode name] isEqualToString:@"content"] || [[itemNode name] isEqualToString:@"summary"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemDesc"];
+					}
+					else if ([[itemNode name] isEqualToString:@"pubDate"] || [[itemNode name] isEqualToString:@"dc:date"] || [[itemNode name] isEqualToString:@"published"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemDates"];
+					}
+					else if ([[itemNode name] isEqualToString:@"link"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemLinks"];
+					}
+					else
+					{
+						//NSLog(@"What arent we getting name: %@", [itemNode name]);
+						//NSLog(@"What arent we getting value: %@", [itemNode stringValue]);
+					}
 				}
-				else if ([[itemNode name] isEqualToString:@"pubDate"] || [[itemNode name] isEqualToString:@"dc:date"])
+
+				if (([[childNode name] isEqualToString:@"title"] && hasTitle == false) || [[childNode name] isEqualToString:@"item"] || [[childNode name] isEqualToString:@"entry"])
 				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemDates"];
-				}
-				else if ([[itemNode name] isEqualToString:@"link"])
-				{
-					[content setValue:[itemNode stringValue] forKey:@"ItemLinks"];
-				}
-				else
-				{
-					//NSLog(@"What arent we getting name: %@", [itemNode name]);
-					//NSLog(@"What arent we getting value: %@", [itemNode stringValue]);
+					[content setValue:groupTitle forKey:@"ItemsFeed"];
+			
+					[self groupItems: content];
+			
+					if ([[childNode name] isEqualToString:@"title"])
+					{
+						hasTitle = true;
+					}
 				}
 			}
+		
+			// This is because sites like Slashdot and Yahoo think it is fun to break the mold
+			if ([[statusNode name] isEqualToString:@"item"] || [[childNode name] isEqualToString:@"entry"])
+			{
+				NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
 
+				childNodeEnum = [[statusNode children] objectEnumerator];
+
+				while((itemNode = [childNodeEnum nextObject]))
+				{
+					if ([[itemNode name] isEqualToString:@"title"])
+					{
+						NSString *tmpValue;
+
+						tmpValue = [itemNode stringValue];
+
+						if ([tmpValue isEqualToString: @""])
+						{
+							tmpValue = @"<No Title>";
+						}
+
+						[content setValue:tmpValue forKey:@"ItemTitle"];
+					}
+					else if ([[itemNode name] isEqualToString:@"description"] || [[itemNode name] isEqualToString:@"content"] || [[itemNode name] isEqualToString:@"summary"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemDesc"];
+					}
+					else if ([[itemNode name] isEqualToString:@"pubDate"] || [[itemNode name] isEqualToString:@"dc:date"] || [[itemNode name] isEqualToString:@"published"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemDates"];
+					}
+					else if ([[itemNode name] isEqualToString:@"link"])
+					{
+						[content setValue:[itemNode stringValue] forKey:@"ItemLinks"];
+					}
+					else
+					{
+						//NSLog(@"What arent we getting name: %@", [itemNode name]);
+						//NSLog(@"What arent we getting value: %@", [itemNode stringValue]);
+					}
+				}
+
+				[content setValue:groupTitle forKey:@"ItemsFeed"];
+
+				[self groupItems: content];
+			}
+		}
+		
+		if (([[statusNode name] isEqualToString:@"title"] && hasTitle == false) || [[statusNode name] isEqualToString:@"item"] || [[statusNode name] isEqualToString:@"entry"])
+		{
 			[content setValue:groupTitle forKey:@"ItemsFeed"];
-
+	
 			[self groupItems: content];
+	
+			if ([[statusNode name] isEqualToString:@"title"])
+			{
+				hasTitle = true;
+			}
 		}
 	}
 

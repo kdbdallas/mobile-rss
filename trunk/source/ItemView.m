@@ -28,8 +28,7 @@
 
 	[self addSubview: navBar];
 	
-	textView = [[UITextView alloc]
-        initWithFrame: CGRectMake(0.0f, 70.0f, 320.0f, rect.size.height - 70.0f)];
+	textView = [[UITextView alloc] initWithFrame: CGRectMake(0.0f, 70.0f, 320.0f, rect.size.height - 70.0f)];
     [textView setEditable:NO];
     [textView setTextSize:15];
 
@@ -62,7 +61,26 @@
 	
 	[self addSubview: textView];
 	
+	// Setup Eye Candy View
+	_eyeCandy = [[[EyeCandy alloc] init] retain];
+	
+	[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(finishLoad:) userInfo:nil repeats:NO];
+	
 	return self;
+}
+
+- (void) finishLoad:(id)param
+{
+	[_eyeCandy showProgressHUD:@"Loading..." withWindow:[_delegate getWindow] withView:self withRect:CGRectMake(0.0f, 100.0f, 320.0f, 50.0f)];
+	[NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(addTextView:) userInfo:nil repeats:NO];
+}
+
+- (void) addTextView:(id)param
+{
+	[textView removeFromSuperview];
+	[self addSubview: textView];
+	
+	[_eyeCandy hideProgressHUD];
 }
 
 - (void) visitLink

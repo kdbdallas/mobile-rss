@@ -36,8 +36,9 @@
 	ItemView *_itemViewView;
 }
 
-- (void) processPlistWithPath;
+- (void) processPlistWithPath:(id)param;
 - (NSString*) getSettingsPath;
+- (UIWindow*) getWindow;
 - (void) showSettings;
 - (void) dealloc;
 - (void) addItem:(NSMutableDictionary *)item;
