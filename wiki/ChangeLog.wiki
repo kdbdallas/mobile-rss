@@ -3,6 +3,16 @@
 
 - - - - - -
 
+*Version 1.4*
+
+  # Added Atom feed support (therefore fixing enhancement 21)
+  # Changed system to only show the splash screen for a second and then show the interface with a ProgressHUD, like in version 0.5.
+  # Fixed defect 9 (mobile-rss just doesn't open sometime) (users please verify)
+  # Inserted temp hack for defect 10 (Engadget Feed doesn't show entire article) (see defect for more info)
+  # Fixed defect 22 (Edit or add feed no longer functions)
+  # Misc other fixes and tweaks
+
+
 *Version 1.3*
 
 
@@ -34,6 +44,7 @@ Fixed bug in program startup that caused a crash if you didn't have a valid feed
 
 Initial release
 
+ 
  
  
  
