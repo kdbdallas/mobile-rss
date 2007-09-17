@@ -84,10 +84,10 @@
 	_eyeCandy = [[[EyeCandy alloc] init] retain];
 	[_eyeCandy showProgressHUD:@"Loading..." withWindow:window withView:mainView withRect:CGRectMake(0.0f, 100.0f, 320.0f, 50.0f)];
 
-	[self processPlistWithPath];
+	[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(processPlistWithPath:) userInfo:nil repeats:NO];
 }
 
-- (void) processPlistWithPath
+- (void) processPlistWithPath:(id)param
 {
 	NSDictionary *FeedsDict = [_settingsView loadSettings: [self getSettingsPath]];
 	NSEnumerator *enumerator = [FeedsDict keyEnumerator];
@@ -124,11 +124,14 @@
 	_content = [NSMutableArray arrayWithCapacity:1];
 	
 	[_content addObjectsFromArray: [_feeds returnArray]];
-	
-	NSLog([NSString stringWithFormat:@"%d", [[_content retain] count]]);
 
 	[_viewTable reloadData];
 	[_eyeCandy hideProgressHUD];
+}
+
+- (UIWindow*) getWindow
+{
+	return window;
 }
 
 - (void) addItem:(NSMutableDictionary *)item
@@ -174,6 +177,7 @@
 	[_itemViewView addSubview:transitionView];
 	[transitionView transition:2 fromView:_itemViewView toView:mainView];
 	[window setContentView: mainView];
+	[_viewTable reloadData];
 }
 
 - (void) showItem:(int)row fromView:(NSString*)fView {
@@ -193,7 +197,7 @@
 		// Setup ItemView View
 		struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		rect.origin.x = rect.origin.y = 0.0f;
-		NSLog(@"%@", [[_content objectAtIndex:row] retain]);
+
 		_itemViewView = [[ItemView alloc] initWithFrame:rect withItem: [[_content objectAtIndex:row] retain] withRow: row];
 		[_itemViewView setDelegate: self];
 

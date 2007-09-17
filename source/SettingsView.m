@@ -97,13 +97,12 @@
 
 	//Build settings dictionary
 	for(index = 0; index < rowCount; index++) {
-		NSMutableString *feedEntered;
+		tmpValue = [[[feedInputs objectAtIndex: index] textField] text];
 		
-		feedEntered = [[[feedInputs objectAtIndex: index] textField] text];
+		NSMutableString *feedEntered = [[NSMutableString alloc] initWithCapacity: [tmpValue length]];
+		[feedEntered insertString: tmpValue atIndex: 0];
 		
-		[feedEntered replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [feedEntered length])];
-		
-		tmpValue = feedEntered;
+		[feedEntered replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [tmpValue length])];
 
 		NSMutableDictionary *indFeedDict = [[NSMutableDictionary alloc] initWithCapacity: 1];
 		
