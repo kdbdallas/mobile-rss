@@ -3,6 +3,11 @@
 
 - - - - - -
 
+*Version 1.4.1*
+
+  # Fixed a bug with displaying Slashdot
+
+
 *Version 1.4*
 
   # Added Atom feed support (therefore fixing enhancement 21)
@@ -44,6 +49,7 @@ Fixed bug in program startup that caused a crash if you didn't have a valid feed
 
 Initial release
 
+ 
  
  
  
