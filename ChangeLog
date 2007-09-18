@@ -1,6 +1,11 @@
 Change Log
 -----------
 
+Version 1.4.1
+-------------
+1) Fixed a bug with showing Slashdot
+
+
 Version 1.4
 -----------
 1) Added Atom feed support (therefore fixing enhancement 21)
