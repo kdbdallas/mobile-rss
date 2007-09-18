@@ -146,6 +146,8 @@
 		}
 		else
 		{
+			addedIt = NO;
+
 			//Gives me all the items
 			childNodeEnum = [[statusNode children] objectEnumerator];
 		
@@ -251,6 +253,8 @@
 						//NSLog(@"What arent we getting value: %@", [itemNode stringValue]);
 					}
 				}
+				
+				addedIt = YES;
 
 				[content setValue:groupTitle forKey:@"ItemsFeed"];
 
@@ -258,7 +262,7 @@
 			}
 		}
 		
-		if (([[statusNode name] isEqualToString:@"title"] && hasTitle == false) || [[statusNode name] isEqualToString:@"item"] || [[statusNode name] isEqualToString:@"entry"])
+		if ((([[statusNode name] isEqualToString:@"title"] && hasTitle == false) || [[statusNode name] isEqualToString:@"item"] || [[statusNode name] isEqualToString:@"entry"]) && addedIt == NO)
 		{
 			[content setValue:groupTitle forKey:@"ItemsFeed"];
 	
