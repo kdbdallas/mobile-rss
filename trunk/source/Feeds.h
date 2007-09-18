@@ -12,6 +12,7 @@
 	NSArray *statusNodes;
 	SettingsView *_settingsView;
 	NSMutableArray *Items;
+	BOOL addedIt;
 }
 
 - (NSMutableArray*) pullFeedURL:(NSString*)FeedURL;
