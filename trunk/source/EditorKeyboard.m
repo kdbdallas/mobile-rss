@@ -29,11 +29,11 @@
 // Override settings of the default keyboard implementation
 //
 
-@interface UIKeyboardImpl : UIView
+/*@interface UIKeyboardImpl : UIView
 {
 
 }
-@end
+@end*/
 
 @implementation UIKeyboardImpl (DisableFeatures)
 
@@ -48,7 +48,12 @@
   return false;
 }
 
-int m_preferredKeyboardType = 1;
+- (int)preferredKeyboardType
+{
+	return 3;
+}
+
+int m_preferredKeyboardType = 3;
 
 @end
 

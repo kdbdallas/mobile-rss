@@ -2,7 +2,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "EyeCandy.h"
-#import "SettingsView.h"
+#import "Settings.h"
+
+@protocol XMLClassProto
+	- (NSXMLNode*)attributeForName:(NSString*)name;
+@end
 
 @interface Feeds : UIApplication {
 	NSURLConnection *theConnection;
@@ -10,7 +14,7 @@
 	EyeCandy *_eyeCandy;
 	NSXMLDocument *xmlDoc;
 	NSArray *statusNodes;
-	SettingsView *_settingsView;
+	Settings *_settingsView;
 	NSMutableArray *Items;
 	BOOL addedIt;
 }
@@ -20,5 +24,6 @@
 - (NSArray*) returnArray;
 - (void) groupItems:(NSMutableDictionary*)content;
 - (void) initArray;
+- (void) dealloc;
 
 @end
