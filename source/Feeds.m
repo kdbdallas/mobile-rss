@@ -8,7 +8,7 @@
 	NSError *error=0;
 	NSData *rssData;
 	
-	NSMutableURLRequest *theRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FeedURL] cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
+	NSMutableURLRequest *theRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FeedURL] cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 	
 	rssData = [NSURLConnection sendSynchronousRequest: theRequest returningResponse: &response error: &error];
 	
@@ -27,7 +27,7 @@
 	NSEnumerator *childNodeEnum;
 	NSEnumerator *itemEnum;
 	NSXMLNode *statusNode = nil;
-	NSXMLNode *childNode = nil;
+	NSXMLNode<XMLClassProto> *childNode = nil;
 	NSXMLNode *itemNode = nil;
 	BOOL hasTitle = false;
 	NSString *groupTitle;
@@ -291,6 +291,16 @@
 - (NSArray*) returnArray
 {
 	return Items;
+}
+
+- (void) dealloc
+{
+	[theConnection release];
+	[_responseData release];
+	[xmlDoc release];
+	[statusNodes release];
+	[Items release];
+	[super dealloc];
 }
 
 // Start of required NSURLConnection methods
