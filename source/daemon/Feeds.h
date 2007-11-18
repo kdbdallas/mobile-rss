@@ -11,8 +11,8 @@
 	BOOL addedIt;
 }
 
-- (NSMutableArray*) pullFeedURL:(NSString*)FeedURL;
-- (NSMutableArray*) processXML:(NSData*)data;
+- (void) pullFeedURL:(NSString*)FeedURL;
+- (void) processXML:(NSData*)data;
 - (NSArray*) returnArray;
 - (void) groupItems:(NSMutableDictionary*)content;
 - (void) initArray;

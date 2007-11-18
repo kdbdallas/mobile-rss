@@ -55,7 +55,6 @@
 	UITextLabel *_title;
 }
 
-- (UITransitionView*)createTransitionView;
 - (void) processPlistWithPath:(id)param;
 - (pid_t) FindPID;
 - (NSString*) getSettingsDIR;
