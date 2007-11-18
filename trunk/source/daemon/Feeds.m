@@ -2,7 +2,7 @@
 
 @implementation Feeds
 
-- (NSMutableArray*) pullFeedURL:(NSString*)FeedURL
+- (void) pullFeedURL:(NSString*)FeedURL
 {
 	NSURLResponse *response=0;
 	NSError *error=0;
@@ -12,10 +12,14 @@
 	
 	rssData = [NSURLConnection sendSynchronousRequest: theRequest returningResponse: &response error: &error];
 
-	return [self processXML: rssData];
+	[theRequest release];
+
+	[self processXML: rssData];
+	
+	[rssData release];
 }
 
-- (NSMutableArray*) processXML:(NSData*)data
+- (void) processXML:(NSData*)data
 {
 	NSError *err = nil;
 	NSEnumerator *childNodeEnum;
