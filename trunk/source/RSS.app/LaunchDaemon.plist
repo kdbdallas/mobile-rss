@@ -14,5 +14,9 @@
 	<false/>
 	<key>RunAtLoad</key>
 	<true/>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>Nice</key>
+	<integer>10</integer>
 </dict>
 </plist>
