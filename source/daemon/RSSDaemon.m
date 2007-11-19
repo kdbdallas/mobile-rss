@@ -79,7 +79,7 @@
 
 - (NSDictionary*) loadSettings: (NSString*)path
 {
-	_settingsPath = [path retain];
+	_settingsPath = path;
 
 	if ([[NSFileManager defaultManager] isReadableFileAtPath: _settingsPath])
 	{
@@ -127,14 +127,20 @@
 			[_feed addObject: [rs stringForColumn: @"feedsID"]];
 			[_feeds initArray];
 			[_feeds pullFeedURL: [rs stringForColumn: @"URL"]];
-			[_content addObjectsFromArray: [_feeds returnArray]];
-			[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
-			[_feedNames addObject: [[[_feeds returnArray] objectAtIndex: 0] objectForKey: @"feed"]];
+
+			NSArray *returnArray = [_feeds returnArray];
+
+			if ([returnArray count] > 0)
+			{
+				[_content addObjectsFromArray: returnArray];
+				[_feedCount addObject: [NSString stringWithFormat:@"%d", [returnArray count]]];
+				[_feedNames addObject: [[returnArray objectAtIndex: 0] objectForKey: @"feed"]];
+			}
 		}
 
 		[rs close];
 
-		for (i = 0; i < [_feed count]; i++)
+		for (i = 0; i < [_feedNames count]; i++)
 		{
 			[db executeUpdate:@"update feeds set feed=? where feedsID=?", [_feedNames objectAtIndex:i], [_feed objectAtIndex: i], nil];
 
@@ -173,6 +179,8 @@
 				}
 
 				fullIndex = fullIndex + 1;
+				
+				[_item release];
 			}
 		}
 

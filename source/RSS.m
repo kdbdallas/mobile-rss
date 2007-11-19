@@ -18,11 +18,96 @@ static NSRecursiveLock *lock;
 	contentRect.origin.x = 0.0f;
 	contentRect.origin.y = 0.0f;
 	
+	BOOL isDir;
+	NSString *DBFile;
+
+	//Check if 1.4.1 Prefs file exists
+	if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" isDirectory: NO])
+	{
+		NSLog(@"Starting 1.4.1 Import");
+		DBExists = NO;
+		isDir = YES;
+		
+		DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+
+		if (![[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/MobileRSS" isDirectory: &isDir])
+		{
+			// Ensure library directories exsist
+			[[NSFileManager defaultManager] createDirectoryAtPath: @"/var/root/Library/Preferences/MobileRSS" attributes: nil];
+		}
+
+		isDir = NO;
+
+		// Folder exists but what about the file?
+		if ([[NSFileManager defaultManager] fileExistsAtPath: DBFile isDirectory: &isDir])
+		{
+			DBExists = YES;
+		}
+		else
+		{
+			[[NSFileManager defaultManager] createFileAtPath: DBFile contents:nil attributes: nil];
+		}
+
+		db = [FMDatabase databaseWithPath: DBFile];
+
+		[db setLogsErrors: YES];
+
+		if (![db open]) {
+		    NSLog(@"Could not open DB at path: %@", DBFile);
+			[_eyeCandy hideProgressHUD];
+			[_eyeCandy showStandardAlertWithString: @"An Error Occurred" closeBtnTitle: @"Close" withError: @"Could not open DB"];
+		}
+
+		if (!DBExists)
+		{
+			// DB didn't exist so we need to set it up
+			[db executeUpdate:@"create table feeds (feedsID INTEGER PRIMARY KEY, feed text, URL text, position integer)", nil];
+			[db executeUpdate:@"create table feedItems (feedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text, itemDate text, itemDateConv text, itemLink text, itemDescrip text, hasViewed integer, dateAdded text)", nil];
+		}
+
+		NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist"];
+
+		NSEnumerator *enumerator = [settingsDict keyEnumerator];
+		NSString *currKey;
+		int position = 0;
+		
+		while (currKey = [enumerator nextObject])
+		{
+			if ([currKey isEqualToString: @"Feeds"])
+			{
+				NSArray *feedArray = [settingsDict objectForKey: currKey];
+
+				int index;
+
+				for (index = 0; index < [feedArray count]; index++)
+				{
+					NSDictionary *feedsDict = [feedArray objectAtIndex: index];
+
+					NSString *titleHolder = [feedsDict objectForKey: @"Title"];
+
+					NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
+					[urlHolder setString: [feedsDict objectForKey: @"URL"]];
+
+					[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
+
+					[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", titleHolder, urlHolder, [NSString stringWithFormat:@"%d", position], nil];
+					
+					position++;
+				}
+			}
+		}
+
+		[db close];
+
+		//Remove now non-needed 1.4.1 Pref file.
+		[[NSFileManager defaultManager] removeFileAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" handler: nil];
+
+		NSLog(@"Finished 1.4.1 Import");
+	}
+	
 	//Check if LaunchDaemon entry exists
 	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist" isDirectory: NO])
 	{
-		//[[NSFileManager defaultManager] copyPath: @"/Applications/RSS.app/LaunchDaemon.plist" toPath: @"/Library/LaunchDaemons/org.mobilestudio.mobilerss" handler:nil];
-
 		//HACK: It seems that Apple removed the NSFileManager copyPath:toPath:handler selector. Use system command.
 		NSString *cpCommand = @"/bin/cp /Applications/RSS.app/LaunchDaemon.plist /System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist";
 		system([cpCommand UTF8String]);
@@ -43,11 +128,11 @@ static NSRecursiveLock *lock;
 	_numFeeds = 0;
 	totalUnread = 0;
 	DBExists = NO;
-	BOOL isDir = YES;
+	isDir = YES;
 	_font = [[self fontForInt: 10] retain];
 
 	_appLibraryPath = [[self getSettingsDIR] stringByAppendingPathComponent: @"MobileRSS"];
-	NSString *DBFile = [_appLibraryPath stringByAppendingPathComponent: @"rss.db"];
+	DBFile = [_appLibraryPath stringByAppendingPathComponent: @"rss.db"];
 
 	if (![[NSFileManager defaultManager] fileExistsAtPath: _appLibraryPath isDirectory: &isDir])
 	{
@@ -587,11 +672,6 @@ static NSRecursiveLock *lock;
 	[_viewTable selectRow: -1 byExtendingSelection: NO];
 	[_viewTable clearAllData];
 	[_viewTable reloadData];
-
-	/*[_title removeFromSuperview];
-	[_viewTable removeFromSuperview];
-	[navBar removeFromSuperview];
-	[botNavBar removeFromSuperview];*/
 }
 
 - (void) hideFeed

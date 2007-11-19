@@ -344,7 +344,7 @@
 	[[_delegate getWindow] setContentView: self];
 	[_ImportView removeFromSuperview];
 
-	[_ImportView release];
+	//[_ImportView release];
 
 	[_importFeeds setEnabled: YES];
 	[_prefsTable selectRow: -1 byExtendingSelection: NO withFade: YES];

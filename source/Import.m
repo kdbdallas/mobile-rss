@@ -111,8 +111,6 @@
 	FMDatabase *db;
 	int index = 0;
 
-	NSLog(@"Importing");
-
 	int row = [importTable selectedRow];
 
 	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
@@ -169,7 +167,6 @@
 
 	if ([[statusNode name] isEqualToString: @"opml"])
 	{
-		NSLog(@"here");
 		childNodeEnum = [[statusNode children] objectEnumerator];
 		childNode = [childNodeEnum nextObject];
 
@@ -182,38 +179,71 @@
 
 		while(childNode = [childNodeEnum nextObject])
 		{
-			NSLog(@"in while: %@", [childNode stringValue]);
-			_TitleNode = [childNode attributeForName:@"title"];
-			_URLNode = [childNode attributeForName:@"xmlUrl"];
+			NSEnumerator *_childNodeEnum = [[childNode children] objectEnumerator];
 			
-			NSString *titleHolder = [_TitleNode stringValue];
-
-			NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
-			[urlHolder setString: [_URLNode stringValue]];
-
-			[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
-
-			NSLog(@"Title: %@", titleHolder);
-
-			// Process
-			rs = [db executeQuery:@"select feedsID, position from feeds where URL = ?", urlHolder, nil];
-
-			// If not in the DB then we have a new item
-			if (![rs next])
+			NSXMLNode<importDelegateProto> *_childNode = nil;
+			
+			while(_childNode = [_childNodeEnum nextObject])
 			{
-				[rs close];
-				
-				NSLog(@"inserting");
+				_TitleNode = [_childNode attributeForName:@"title"];
+				_URLNode = [_childNode attributeForName:@"xmlUrl"];
+			
+				NSString *_titleHolder = [_TitleNode stringValue];
 
-				[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", titleHolder, urlHolder, [NSString stringWithFormat:@"%d", index], nil];
+				NSMutableString *_urlHolder = [NSMutableString stringWithCapacity: 1];
+				[_urlHolder setString: [_URLNode stringValue]];
+
+				[_urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [_urlHolder length])];
+
+				// Process
+				rs = [db executeQuery:@"select feedsID, position from feeds where URL = ?", _urlHolder, nil];
+
+				// If not in the DB then we have a new item
+				if (![rs next])
+				{
+					[rs close];
+
+					[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", _titleHolder, _urlHolder, [NSString stringWithFormat:@"%d", index], nil];
+				}
+				else
+				{
+					// Already there, so we move on
+					[rs close];
+				}
+
+				index = index + 1;
 			}
-			else
+
+			if ([childNode attributeForName:@"xmlUrl"] != nil)
 			{
-				// Already there, so we move on
-				[rs close];
-			}
+				_TitleNode = [childNode attributeForName:@"title"];
+				_URLNode = [childNode attributeForName:@"xmlUrl"];
+		
+				NSString *titleHolder = [_TitleNode stringValue];
 
-			index = index + 1;
+				NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
+				[urlHolder setString: [_URLNode stringValue]];
+
+				[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
+
+				// Process
+				rs = [db executeQuery:@"select feedsID, position from feeds where URL = ?", urlHolder, nil];
+
+				// If not in the DB then we have a new item
+				if (![rs next])
+				{
+					[rs close];
+
+					[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", titleHolder, urlHolder, [NSString stringWithFormat:@"%d", index], nil];
+				}
+				else
+				{
+					// Already there, so we move on
+					[rs close];
+				}
+
+				index = index + 1;
+			}
 		}
 	}
 	else
@@ -221,11 +251,9 @@
 		[_eyeCandy hideProgressHUD];
 		[_eyeCandy showStandardAlertWithString: @"An Error Occurred" closeBtnTitle: @"Close" withError: @"Invalid OPML File"];
 	}
-	
-	NSLog(@"done");
 
 	[db close];
-
+	
 	[_eyeCandy hideProgressHUD];
 
 	[_delegate hideImport];
@@ -330,11 +358,18 @@
 }
 
 - (BOOL)table:(UITable *)aTable canSelectRow:(int)row {
-	[_eyeCandy showProgressHUD:@"Importing..." withWindow:[_delegate getWindow] withView:self withRect:CGRectMake(0.0f, 100.0f, 320.0f, 50.0f)];
+	if (aTable == importTable)
+	{
+		[_eyeCandy showProgressHUD:@"Importing..." withWindow:[_delegate getWindow] withView:self withRect:CGRectMake(0.0f, 100.0f, 320.0f, 50.0f)];
 
-	[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(import:) userInfo:nil repeats:NO];
+		[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(import:) userInfo:nil repeats:NO];
 
-	return YES;
+		return YES;
+	}
+	else
+	{
+		return NO;
+	}
 }
 // End of UITable required methods
 

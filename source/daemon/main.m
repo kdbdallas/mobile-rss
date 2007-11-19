@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	sleep(120);
+	//sleep(120);
 
 	//return UIApplicationMain(argc, argv, [RSSDaemon class]);
 	

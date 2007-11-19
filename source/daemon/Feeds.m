@@ -36,7 +36,7 @@
 	ARM linker. For some reason, it does not see the NSXMLDocument symbol that is defined
 	in the OfficeImport framework. So we resolve the symbol at runtime. */
 	xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:data options:NSXMLNodeOptionsNone error:&err] autorelease];
-	
+
 	NSEnumerator *statusNodeEnumerator;
 	
 	statusNodes = [[[[xmlDoc children] lastObject] children] retain];
@@ -263,7 +263,7 @@
 		}
 	}
 
-	return nil;
+	[statusNodes release];
 }
 
 - (void) initArray
@@ -285,7 +285,6 @@
 {
 	[theConnection release];
 	[_responseData release];
-	[statusNodes release];
 	[Items release];
 	[super dealloc];
 }
