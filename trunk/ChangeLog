@@ -3,7 +3,27 @@ Change Log
 
 Version 2.0
 -----------
-*list coming soon*
+Updated UI
+App Threading added
+Feed Auto Update (when app open and closed)
+New Icon
+Shows unread item count on icon
+Delete Read/All/Specific Feed Items
+Mark all/feed/specific items read/unread
+Manual Update
+OPML Importing
+Select length to keep feed items
+Select Font
+Select Font Size
+Select Refresh Interval
+Feed Ordering
+Quick Add
+Unread marking
+Unread count
+Updated item navigation
+Better memory mangement
+
+
 
 Version 1.4.1
 -------------
