@@ -24,14 +24,11 @@ http://code.google.com/p/mobilestudio/
 Thanks to the iPhone Dev Team, stepwhite, nervegas, Erica Sadun, and all the other iPhone hackers for everything, including but not limited to: hacking, code examples, icons, etc.
 
 Install Instructions:
-A) Use an installer program that you install on your iPhone (easy to do, less updates possible)
+A) Use the installer.app program to install Mobile RSS on your iPhone/Touch (easy to do, less updates possible)
 B) (a little harder, update as much as you want)
-	1. Jailbreak iPhone (see http://iphone.fiveforty.net/wiki/index.php/How_to_Escape_Jail)
+	1. Jailbreak iPhone/Touch
 	2. Install SSH
-		Mac) http://www.kdbdallas.com/index.php/2007/08/04/iphone-ssh-install-for-mac-shell-script/
-		Windows) http://cre.ations.net/blog/post/howto-install-ssh-on-your-iphone
 	3. Use SCP (Secure Copy) to upload the apps to your phone.
-		example) scp -r Finder.app root@[iPhone IP Address]:/Applications/
-		note) Remember the default root password is: dottie
+		example) scp -r RSS.app root@[iPhone IP Address]:/Applications/
+		note) Remember the default root password is: alpine
 	4. Reboot your iPhone
-	5. *Optional* Edit /System/Library/CoreServices/SpringBoard.app/DisplayOrder.plist to order the icons on your main screen
