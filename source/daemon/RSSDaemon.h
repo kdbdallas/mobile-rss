@@ -19,6 +19,8 @@
 }
 
 - (void) applicationDidFinishLaunching: (id) unused;
+- (int) getNextRun;
+- (void) saveNextRun: (time_t)nextRun;
 - (void) InfiLoop;
 - (void) processPlistWithPath;
 - (NSDictionary*) loadSettings: (NSString*)path;
@@ -26,6 +28,7 @@
 - (NSString*) getSettingsDIR;
 - (NSString*) getSettingsPath;
 - (pid_t) FindPID;
+- (pid_t) FindSBPID;
 - (void) dealloc;
 
 @end

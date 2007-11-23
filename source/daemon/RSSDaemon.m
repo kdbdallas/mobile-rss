@@ -4,18 +4,29 @@
 
 - (void) applicationDidFinishLaunching: (id) unused
 {
-	[self processPlistWithPath];
+	pid_t FoundPID = [self FindSBPID];
 
-	[self refreshAllFeeds];
+	if (FoundPID != -1)
+	{
+		[self processPlistWithPath];
 
-	[self InfiLoop];
+		//[self refreshAllFeeds];
+
+		NSString *badgeUpdateCmd = @"/Applications/RSS.app/badgeUpdate";
+
+		system([badgeUpdateCmd UTF8String]);
+
+		[self InfiLoop];
+	}
+	
+	exit(0);
 }
 
 - (void) InfiLoop
 {
 	if (_RefreshEvery != 0)
 	{
-		time_t begin = time(0);
+		/*time_t begin = time(0);
 		time_t nextRun = begin + _RefreshEvery;
 
 		while (1)
@@ -25,16 +36,68 @@
 			if (now >= nextRun)
 			{
 				nextRun += _RefreshEvery;
-				NSLog(@"Starting Refresh");
+
 				[self refreshAllFeeds];
-				NSLog(@"Finished Refresh");
 			}
 
-			NSLog(@"Going to Sleep");
 			sleep(60);
-			NSLog(@"Waking Up");
+		}*/
+		
+		time_t now = time(0);
+		time_t nextRun = [self getNextRun];
+
+		//NSLog(@"now = %d  nextRun = %d", now, nextRun);
+
+		if (now >= nextRun)
+		{
+			nextRun += _RefreshEvery;
+			
+			[self saveNextRun:nextRun];
+
+			[self refreshAllFeeds];
 		}
 	}
+}
+
+- (int) getNextRun
+{
+	if ([[NSFileManager defaultManager] isReadableFileAtPath: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist"])
+	{
+		NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist"];
+
+		NSEnumerator *enumerator = [settingsDict keyEnumerator];
+		NSString *currKey;
+
+		while (currKey = [enumerator nextObject])
+		{
+			if ([currKey isEqualToString: @"NextRun"])
+			{
+				return [[settingsDict objectForKey: currKey] intValue];
+			}
+		}
+	}
+	else
+	{
+		return time(0);
+	}
+}
+
+- (void) saveNextRun: (time_t)nextRun
+{
+	NSString *error;
+
+	NSMutableDictionary *settingsDict = [[NSMutableDictionary alloc] initWithCapacity: 1];
+
+	NSString *tmpString = [NSString stringWithFormat:@"%d", nextRun];
+	NSLog(@"Next Run: %@", tmpString);
+
+	[settingsDict setObject:tmpString forKey: @"NextRun"];
+
+	//Seralize settings dictionary
+	NSData *rawPList = [NSPropertyListSerialization dataFromPropertyList: settingsDict format: NSPropertyListXMLFormat_v1_0 errorDescription: &error];
+
+	//Write settings plist file
+	[rawPList writeToFile: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist" atomically: YES];
 }
 
 - (void) processPlistWithPath
@@ -95,6 +158,8 @@
 
 - (void) refreshAllFeeds
 {
+	NSLog(@"Refreshing Feeds");
+
 	pid_t FoundPID = [self FindPID];
 
 	if (FoundPID == -1)
@@ -155,22 +220,34 @@
 				{
 					[rs close];
 
-					if ([_item objectForKey:@"ItemTitle"] != nil)
+					rs = [db executeQuery:@"select deletedItemsID from deletedItems where feedsID = ? and itemTitle = ?", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], nil];
+
+					// If not in the deleted table then we want it
+					if (![rs next])
 					{
-						NSDate *_itemDateConv;
-						NSString *itemDateConv;
+						[rs close];
 
-						if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+						if ([_item objectForKey:@"ItemTitle"] != nil)
 						{
-							itemDateConv = [NSCalendarDate  date];
-						}
-						else
-						{
-							_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
-							itemDateConv = [_itemDateConv description];
-						}
+							NSDate *_itemDateConv;
+							NSString *itemDateConv;
 
-						[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+							if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+							{
+								itemDateConv = [NSCalendarDate  date];
+							}
+							else
+							{
+								_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
+								itemDateConv = [_itemDateConv description];
+							}
+
+							[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+						}
+					}
+					else
+					{
+						[rs close];
 					}
 				}
 				else
@@ -225,6 +302,7 @@
 		[rs release];
 		[_needToDelete release];
 		[_rs release];
+		[db release];
 	}
 }
 

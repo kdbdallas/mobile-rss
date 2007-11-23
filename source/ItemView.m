@@ -129,14 +129,15 @@
 
 	//[db executeUpdate:@"update feedItems set hasViewed=1 where itemLink=? and feedsID=? and itemDateConv=?", _visitLink, [NSString stringWithFormat:@"%d", feedsID], _itemDateConv, nil];
 	[db executeUpdate:@"update feedItems set hasViewed=1 where itemLink=? and feedsID=?", _visitLink, [NSString stringWithFormat:@"%d", feedsID], nil];
-	
+
 	[self addSubview: textView];
+	
+	[db close];
 	
 	// Setup Eye Candy View
 	_eyeCandy = [[[EyeCandy alloc] init] retain];
-	
-	//[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(finishLoad:) userInfo:nil repeats:NO];
-	[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(addTextView:) userInfo:nil repeats:NO];
+
+	//[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(addTextView:) userInfo:nil repeats:NO];
 
 	return self;
 }
@@ -173,7 +174,6 @@
 
 - (void) deleteItem
 {
-	NSLog(@"here: %d", _feedItemsID);
 	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
 
 	db = [FMDatabase databaseWithPath: DBFile];
@@ -182,7 +182,22 @@
 	    NSLog(@"Could not open db.");
 	}
 
-	[db executeUpdate:@"delete from feedItems where feedItemsID=?", [NSString stringWithFormat:@"%d", _feedItemsID], nil];
+	FMResultSet *rs = [db executeQuery:@"select feedsID, itemTitle from feedItems where feedItemsID=?", [NSString stringWithFormat:@"%d", _feedItemsID], nil];
+
+	if ([rs next])
+	{
+		int feedsID = [rs intForColumn: @"feedsID"];
+		NSString *itemTitle = [rs stringForColumn: @"itemTitle"];
+
+		[rs close];
+
+		[db executeUpdate:@"insert into deletedItems (feedsID, itemTitle) values(?, ?)", [NSString stringWithFormat:@"%d", feedsID], itemTitle, nil];
+		[db executeUpdate:@"delete from feedItems where feedsID=? and itemTitle=?", [NSString stringWithFormat:@"%d", feedsID], itemTitle, nil];
+	}
+	else
+	{
+		[rs close];
+	}
 
 	[db close];
 
