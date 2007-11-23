@@ -24,7 +24,6 @@ static NSRecursiveLock *lock;
 	//Check if 1.4.1 Prefs file exists
 	if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" isDirectory: NO])
 	{
-		NSLog(@"Starting 1.4.1 Import");
 		DBExists = NO;
 		isDir = YES;
 		
@@ -39,71 +38,70 @@ static NSRecursiveLock *lock;
 		isDir = NO;
 
 		// Folder exists but what about the file?
-		if ([[NSFileManager defaultManager] fileExistsAtPath: DBFile isDirectory: &isDir])
-		{
-			DBExists = YES;
-		}
-		else
+		// If the DB already exists then we don't want to import, but because they already have feeds setup
+		if (![[NSFileManager defaultManager] fileExistsAtPath: DBFile isDirectory: &isDir])
 		{
 			[[NSFileManager defaultManager] createFileAtPath: DBFile contents:nil attributes: nil];
-		}
 
-		db = [FMDatabase databaseWithPath: DBFile];
+			db = [FMDatabase databaseWithPath: DBFile];
 
-		[db setLogsErrors: YES];
+			[db setLogsErrors: YES];
 
-		if (![db open]) {
-		    NSLog(@"Could not open DB at path: %@", DBFile);
-			[_eyeCandy hideProgressHUD];
-			[_eyeCandy showStandardAlertWithString: @"An Error Occurred" closeBtnTitle: @"Close" withError: @"Could not open DB"];
-		}
+			if (![db open]) {
+			    NSLog(@"Could not open DB at path: %@", DBFile);
+				[_eyeCandy hideProgressHUD];
+				[_eyeCandy showStandardAlertWithString: @"An Error Occurred" closeBtnTitle: @"Close" withError: @"Could not open DB"];
+			}
 
-		if (!DBExists)
-		{
-			// DB didn't exist so we need to set it up
-			[db executeUpdate:@"create table feeds (feedsID INTEGER PRIMARY KEY, feed text, URL text, position integer)", nil];
-			[db executeUpdate:@"create table feedItems (feedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text, itemDate text, itemDateConv text, itemLink text, itemDescrip text, hasViewed integer, dateAdded text)", nil];
-		}
-
-		NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist"];
-
-		NSEnumerator *enumerator = [settingsDict keyEnumerator];
-		NSString *currKey;
-		int position = 0;
-		
-		while (currKey = [enumerator nextObject])
-		{
-			if ([currKey isEqualToString: @"Feeds"])
+			if (!DBExists)
 			{
-				NSArray *feedArray = [settingsDict objectForKey: currKey];
+				// DB didn't exist so we need to set it up
+				[db executeUpdate:@"create table feeds (feedsID INTEGER PRIMARY KEY, feed text, URL text, position integer)", nil];
+				[db executeUpdate:@"create table feedItems (feedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text, itemDate text, itemDateConv text, itemLink text, itemDescrip text, hasViewed integer, dateAdded text)", nil];
+				[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
+			}
 
-				int index;
+			NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist"];
 
-				for (index = 0; index < [feedArray count]; index++)
+			NSEnumerator *enumerator = [settingsDict keyEnumerator];
+			NSString *currKey;
+			int position = 0;
+		
+			while (currKey = [enumerator nextObject])
+			{
+				if ([currKey isEqualToString: @"Feeds"])
 				{
-					NSDictionary *feedsDict = [feedArray objectAtIndex: index];
+					NSArray *feedArray = [settingsDict objectForKey: currKey];
 
-					NSString *titleHolder = [feedsDict objectForKey: @"Title"];
+					int index;
 
-					NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
-					[urlHolder setString: [feedsDict objectForKey: @"URL"]];
+					for (index = 0; index < [feedArray count]; index++)
+					{
+						NSDictionary *feedsDict = [feedArray objectAtIndex: index];
 
-					[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
+						NSString *titleHolder = [feedsDict objectForKey: @"Title"];
 
-					[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", titleHolder, urlHolder, [NSString stringWithFormat:@"%d", position], nil];
+						NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
+						[urlHolder setString: [feedsDict objectForKey: @"URL"]];
+
+						[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
+
+						[db executeUpdate:@"insert into feeds (feed, URL, position) values (?, ?, ?)", titleHolder, urlHolder, [NSString stringWithFormat:@"%d", position], nil];
 					
-					position++;
+						position++;
+					}
 				}
 			}
-		}
 
-		[db close];
+			[db close];
+
+			NSLog(@"Imported 1.4.1 Feeds");
+		}
 
 		//Remove now non-needed 1.4.1 Pref file.
 		[[NSFileManager defaultManager] removeFileAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" handler: nil];
-
-		NSLog(@"Finished 1.4.1 Import");
 	}
+	//End Check if 1.4.1 Prefs file exists
 	
 	//Check if LaunchDaemon entry exists
 	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist" isDirectory: NO])
@@ -167,6 +165,12 @@ static NSRecursiveLock *lock;
 		// DB didn't exist so we need to set it up
 		[db executeUpdate:@"create table feeds (feedsID INTEGER PRIMARY KEY, feed text, URL text, position integer)", nil];
 		[db executeUpdate:@"create table feedItems (feedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text, itemDate text, itemDateConv text, itemLink text, itemDescrip text, hasViewed integer, dateAdded text)", nil];
+		[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
+	}
+	else
+	{
+		//DB Exists but make sure they have the newest table
+		[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
 	}
 
 	mainView = [[UIView alloc] initWithFrame: rect];
@@ -305,7 +309,26 @@ static NSRecursiveLock *lock;
 	    NSLog(@"Could not open db.");
 	}
 
-	[db executeUpdate:@"delete from feedItems where hasViewed=1", nil];
+	NSMutableArray *feedsIDs = [NSMutableArray arrayWithCapacity:1];
+	NSMutableArray *itemTitles = [NSMutableArray arrayWithCapacity:1];
+
+	FMResultSet *rs = [db executeQuery:@"select feedsID, itemTitle from feedItems where hasViewed=1", nil];
+
+	while ([rs next])
+	{
+		[feedsIDs addObject: [NSString stringWithFormat:@"%d", [rs intForColumn: @"feedsID"]]];
+		[itemTitles addObject: [rs stringForColumn: @"itemTitle"]];
+	}
+
+	[rs close];
+
+	int index;
+
+	for (index = 0; index < [feedsIDs count]; index++)
+	{
+		[db executeUpdate:@"insert into deletedItems (feedsID, itemTitle) values(?, ?)", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+		[db executeUpdate:@"delete from feedItems where feedsID=? and itemTitle=?", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+	}
 
 	[db close];
 
@@ -324,7 +347,26 @@ static NSRecursiveLock *lock;
 	    NSLog(@"Could not open db.");
 	}
 
-	[db executeUpdate:@"delete from feedItems", nil];
+	NSMutableArray *feedsIDs = [NSMutableArray arrayWithCapacity:1];
+	NSMutableArray *itemTitles = [NSMutableArray arrayWithCapacity:1];
+
+	FMResultSet *rs = [db executeQuery:@"select feedsID, itemTitle from feedItems", nil];
+
+	while ([rs next])
+	{
+		[feedsIDs addObject: [NSString stringWithFormat:@"%d", [rs intForColumn: @"feedsID"]]];
+		[itemTitles addObject: [rs stringForColumn: @"itemTitle"]];
+	}
+
+	[rs close];
+
+	int index;
+
+	for (index = 0; index < [feedsIDs count]; index++)
+	{
+		[db executeUpdate:@"insert into deletedItems (feedsID, itemTitle) values(?, ?)", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+		[db executeUpdate:@"delete from feedItems where feedsID=? and itemTitle=?", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+	}
 
 	[db close];
 

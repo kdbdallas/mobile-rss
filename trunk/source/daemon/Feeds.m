@@ -38,13 +38,13 @@
 	xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:data options:NSXMLNodeOptionsNone error:&err] autorelease];
 
 	NSEnumerator *statusNodeEnumerator;
-	
+
 	statusNodes = [[[[xmlDoc children] lastObject] children] retain];
 	
 	if (!statusNodes)
 	{
 		statusNode = [xmlDoc rootElement];
-		
+
 		if ((![[statusNode name] isEqualToString: @"channel"]) || (![[statusNode name] isEqualToString: @"feed"]))
 		{
 			childNodeEnum = [[statusNode children] objectEnumerator];

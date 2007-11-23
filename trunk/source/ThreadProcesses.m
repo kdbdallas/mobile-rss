@@ -48,8 +48,6 @@
 
 	[rs close];
 
-	NSLog(@"Parsing items");
-
 	for (i = 0; i < [_feed count]; i++)
 	{
 		[_db executeUpdate:@"update feeds set feed=? where feedsID=?", [_feedNames objectAtIndex:i], [_feed objectAtIndex: i], nil];
@@ -66,24 +64,36 @@
 			{
 				[rs close];
 
-				if ([_item objectForKey:@"ItemTitle"] != nil)
+				rs = [_db executeQuery:@"select deletedItemsID from deletedItems where feedsID = ? and itemTitle = ?", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], nil];
+
+				// If not in the deleted table then we want it
+				if (![rs next])
 				{
-					NSDate *_itemDateConv;
-					NSString *itemDateConv;
+					[rs close];
 
-					if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+					if ([_item objectForKey:@"ItemTitle"] != nil)
 					{
-						itemDateConv = [NSCalendarDate  date];
-						_itemDateConv = [NSDate dateWithNaturalLanguageString: itemDateConv];
-						itemDateConv = [_itemDateConv description];
-					}
-					else
-					{
-						_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
-						itemDateConv = [_itemDateConv description];
-					}
+						NSDate *_itemDateConv;
+						NSString *itemDateConv;
 
-					[_db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+						if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+						{
+							itemDateConv = [NSCalendarDate  date];
+							_itemDateConv = [NSDate dateWithNaturalLanguageString: itemDateConv];
+							itemDateConv = [_itemDateConv description];
+						}
+						else
+						{
+							_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
+							itemDateConv = [_itemDateConv description];
+						}
+
+						[_db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+					}
+				}
+				else
+				{
+					[rs close];
 				}
 			}
 			else
@@ -95,11 +105,7 @@
 		}
 	}
 
-	NSLog(@"Done Parsing Items");
-
 	[self performSelectorOnMainThread:@selector(DBUpdated:) withObject:nil waitUntilDone:NO];
-
-	NSLog(@"Done Refreshing All Feeds");
 
 	[_db close];
 
@@ -109,7 +115,7 @@
 - (void) refreshSingleFeed:(id)param
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSLog(@"refresh single");
+
 	int feedsID = (int)[_delegate getFeedsID];
 
 	NSLog(@"Refreshing Single Feed: %d", feedsID);
@@ -147,14 +153,12 @@
 
 	[rs close];
 
-	NSLog(@"Parsing items");
-
 	[db executeUpdate:@"update feeds set feed=? where feedsID=?", [_feedNames objectAtIndex:i], [NSString stringWithFormat:@"%d", feedsID], nil];
 
 	for (index = 0; index < [[_feedCount objectAtIndex: i] intValue]; index++)
 	{
 		NSDictionary *_item = [[__content objectAtIndex:index] retain];
-		
+
 		//rs = [db executeQuery:@"select feedItemsID from feedItems where feedsID = ? and itemTitle = ? and itemDate = ?", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], nil];
 		rs = [db executeQuery:@"select feedItemsID from feedItems where feedsID = ? and itemTitle = ?", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], nil];
 
@@ -163,22 +167,34 @@
 		{
 			[rs close];
 
-			if ([_item objectForKey:@"ItemTitle"] != nil)
+			rs = [db executeQuery:@"select deletedItemsID from deletedItems where feedsID = ? and itemTitle = ?", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], nil];
+
+			// If not in the deleted table then we want it
+			if (![rs next])
 			{
-				NSDate *_itemDateConv;
-				NSString *itemDateConv;
+				[rs close];
 
-				if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+				if ([_item objectForKey:@"ItemTitle"] != nil)
 				{
-					itemDateConv = [NSCalendarDate  date];
-				}
-				else
-				{
-					_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
-					itemDateConv = [_itemDateConv description];
-				}
+					NSDate *_itemDateConv;
+					NSString *itemDateConv;
 
-				[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], [NSString stringWithFormat:@"%@", itemDateConv], [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+					if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
+					{
+						itemDateConv = [NSCalendarDate  date];
+					}
+					else
+					{
+						_itemDateConv = [NSDate dateWithNaturalLanguageString: [_item objectForKey:@"ItemDates"]];
+						itemDateConv = [_itemDateConv description];
+					}
+
+					[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], [NSString stringWithFormat:@"%@", itemDateConv], [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+				}
+			}
+			else
+			{
+				[rs close];
 			}
 		}
 		else
@@ -187,11 +203,7 @@
 		}
 	}
 
-	NSLog(@"Done Parsing Items");
-
 	[self performSelectorOnMainThread:@selector(DBUpdated:) withObject:nil waitUntilDone:NO];
-
-	NSLog(@"Done Refreshing Single Feed");
 
 	[db close];
 

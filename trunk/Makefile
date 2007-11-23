@@ -32,6 +32,7 @@ package:
 	mv RSSDaemon ./build/RSS.app/
 	mv badgeUpdate ./build/RSS.app/
 	rm -rf ./build/RSS.app/.svn
+	rm -rf ./build/RSS.app/*.png.svn-base
 	rm -rf ./build/RSS.app/.DS_Store
 
 clean:

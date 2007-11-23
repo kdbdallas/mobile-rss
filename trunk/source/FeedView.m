@@ -206,7 +206,28 @@
 	    NSLog(@"Could not open db.");
 	}
 
-	[db executeUpdate:@"delete from feedItems where feedsID=? and hasViewed=1", [NSString stringWithFormat:@"%d", _feedsID], nil];
+	NSMutableArray *feedsIDs = [NSMutableArray arrayWithCapacity:1];
+	NSMutableArray *itemTitles = [NSMutableArray arrayWithCapacity:1];
+
+	FMResultSet *rs = [db executeQuery:@"select feedsID, itemTitle from feedItems where feedsID=? and hasViewed=1", [NSString stringWithFormat:@"%d", _feedsID], nil];
+
+	while ([rs next])
+	{
+		[feedsIDs addObject: [NSString stringWithFormat:@"%d", [rs intForColumn: @"feedsID"]]];
+		[itemTitles addObject: [rs stringForColumn: @"itemTitle"]];
+	}
+
+	[rs close];
+
+	int index;
+
+	for (index = 0; index < [feedsIDs count]; index++)
+	{
+		[db executeUpdate:@"insert into deletedItems (feedsID, itemTitle) values(?, ?)", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+		[db executeUpdate:@"delete from feedItems where feedsID=? and itemTitle=?", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+	}
+
+	[db close];
 
 	[_viewTable selectRow: -1 byExtendingSelection: NO];
 	[_viewTable clearAllData];
@@ -222,8 +243,29 @@
 	if (![db open]) {
 	    NSLog(@"Could not open db.");
 	}
+	
+	NSMutableArray *feedsIDs = [NSMutableArray arrayWithCapacity:1];
+	NSMutableArray *itemTitles = [NSMutableArray arrayWithCapacity:1];
 
-	[db executeUpdate:@"delete from feedItems where feedsID=?", [NSString stringWithFormat:@"%d", _feedsID], nil];
+	FMResultSet *rs = [db executeQuery:@"select feedsID, itemTitle from feedItems where feedsID=?", [NSString stringWithFormat:@"%d", _feedsID], nil];
+
+	while ([rs next])
+	{
+		[feedsIDs addObject: [NSString stringWithFormat:@"%d", [rs intForColumn: @"feedsID"]]];
+		[itemTitles addObject: [rs stringForColumn: @"itemTitle"]];
+	}
+
+	[rs close];
+
+	int index;
+
+	for (index = 0; index < [feedsIDs count]; index++)
+	{
+		[db executeUpdate:@"insert into deletedItems (feedsID, itemTitle) values(?, ?)", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+		[db executeUpdate:@"delete from feedItems where feedsID=? and itemTitle=?", [feedsIDs objectAtIndex: index], [itemTitles objectAtIndex: index], nil];
+	}
+
+	[db close];
 
 	[_viewTable selectRow: -1 byExtendingSelection: NO];
 	[_viewTable clearAllData];
@@ -372,7 +414,7 @@
 	FMResultSet *rs = [db executeQuery:@"select count(feedItemsID) as count from feedItems where feedsID=?", [NSString stringWithFormat:@"%d", _feedsID], nil];
 
 	[rs next];
-	
+
 	int countVal = [[rs stringForColumn: @"count"] intValue];
 
 	[rs close];
@@ -394,7 +436,7 @@
 	    NSLog(@"Could not open db.");
 	}
 
-	FMResultSet *rs = [db executeQuery:@"select * from feedItems where feedsID=? order by itemDateConv desc, feedItemsID asc limit ?,1", [NSString stringWithFormat:@"%d", _feedsID], [NSString stringWithFormat:@"%d", row], nil];
+	FMResultSet *rs = [db executeQuery:@"select * from feedItems where feedsID=? order by itemDateConv desc, itemDate desc, feedItemsID asc limit ?,1", [NSString stringWithFormat:@"%d", _feedsID], [NSString stringWithFormat:@"%d", row], nil];
 
 	[rs next];
 

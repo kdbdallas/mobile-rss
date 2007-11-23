@@ -10,11 +10,21 @@ int main(int argc, char *argv[])
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
 	//sleep(120);
-
-	//return UIApplicationMain(argc, argv, [RSSDaemon class]);
 	
+	/*BOOL isDir = YES;
+
+	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Logs" isDirectory: &isDir])
+	{
+		// Ensure library directories exsist
+		[[NSFileManager defaultManager] createDirectoryAtPath: @"/var/root/Library/Logs" attributes: nil];
+	}
+
+	freopen("/private/var/root/Library/Logs/RSS.log", "a", stderr);*/
+
 	RSSDaemon *rss = [[RSSDaemon alloc] autorelease];
 	[rss applicationDidFinishLaunching:nil];
+
+	[rss release];
 }
 
 //Takes the place of automatically generated objc function until the toolchain is fixed for this function
