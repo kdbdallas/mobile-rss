@@ -10,6 +10,9 @@
 	[self setRow: row];
 	[self setFeedsID: feedsID];
 	
+	mTransView = [[UITransitionView alloc] initWithFrame: rect];
+	[self addSubview: mTransView];
+	
 	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)];
 	//[navBar showButtonsWithLeftTitle: @"Back" rightTitle:@"Next >>" leftBack: TRUE];
 	[navBar showButtonsWithLeftTitle: @"Back" rightTitle:nil leftBack: TRUE];
@@ -17,12 +20,12 @@
 	[navBar enableAnimation];
 	[navBar setDelegate: self];
 	
-	botNavBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)];
+	botNavBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)] autorelease];
     [botNavBar setBarStyle: 3];
 	[botNavBar setDelegate: self];
 
 	UIImage *btnImage = [UIImage applicationImageNamed:@"internet.png"];
-	UIPushButton *pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	UIPushButton *pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: NO];
 	[pushButton setEnabled:YES];
@@ -32,7 +35,7 @@
 	[navBar addSubview: pushButton];
 
 	btnImage = [UIImage applicationImageNamed:@"delete.png"];
-	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(0.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
@@ -41,7 +44,7 @@
 	[pushButton addTarget: self action: @selector(deleteItemQ) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
 
-	direcBtns = [[UISegmentedControl alloc] initWithFrame:CGRectMake(220.0f, 8.0f, 88.0f, 30.0f) withStyle:2 withItems:NULL];
+	direcBtns = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(220.0f, 8.0f, 88.0f, 30.0f) withStyle:2 withItems:NULL] autorelease];
 	UIImage *btnUpImage = [UIImage applicationImageNamed:@"arrowup.png"];
 	UIImage *btnDownImage = [UIImage applicationImageNamed:@"arrowdown.png"];
 	[direcBtns insertSegment:0 withImage:btnUpImage animated:FALSE];
@@ -50,17 +53,40 @@
 	[botNavBar addSubview:direcBtns];
 
 	[self addSubview: botNavBar];
+	
+	scroller = [[UIScroller alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)];
+	[scroller setScrollingEnabled: YES];
+	[scroller setAdjustForContentSizeChange: YES];
+	[scroller setClipsSubviews: YES];
+	[scroller setAllowsRubberBanding: YES];
+	[scroller setDelegate: self];
 
-	UITextLabel *_title = [[UITextLabel alloc] initWithFrame: CGRectMake(65.0f, 10.0f, 220.0f, 25.0f)];
+	[self addSubview: scroller];
+	
+	web = [[UIWebView alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)];
+	[web setTilingEnabled: YES];
+	[web setTileSize: CGSizeMake(320.f,1000)];
+	[web setDelegate: self];
+	[web setAutoresizes: YES];
+	[web setEnabledGestures: 2];
+
+	mCoreWebView = [web webView];
+	[mCoreWebView setFrameLoadDelegate: self];
+	mFrame = [mCoreWebView mainFrame];
+
+	[mCoreWebView setPolicyDelegate: self];
+	[mCoreWebView setUIDelegate: self];
+
+	UITextLabel *_title = [[[UITextLabel alloc] initWithFrame: CGRectMake(65.0f, 10.0f, 220.0f, 25.0f)] autorelease];
 	[_title setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:20]];
 	[_title setCentersHorizontally: YES];
 	[_title setBackgroundColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:0.0f]];
 	[_title setColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:1.0f]];
 	[_title setWrapsText: NO];
 
-	textView = [[UITextView alloc] initWithFrame: CGRectMake(0.0f, 44.0f, 320.0f, rect.size.height - 88.0f)];
+	/*textView = [[UITextView alloc] initWithFrame: CGRectMake(0.0f, 44.0f, 320.0f, rect.size.height - 88.0f)];
     [textView setEditable:NO];
-    [textView setTextSize:15];
+    [textView setTextSize:15];*/
 
 	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
 
@@ -93,7 +119,7 @@
 
 	_visitLink = [[rs stringForColumn: @"itemLink"] retain];
 
-	NSMutableString *fullText = [[NSMutableString alloc] initWithString: @"<b>"];
+	NSMutableString *fullText = [[[NSMutableString alloc] initWithString: @"<b>"] autorelease];
 
 	if ([rs stringForColumn: @"itemTitle"] != nil)
 	{
@@ -123,14 +149,16 @@
 		[fullText appendString:@"<i>The feed did not supply the text of this item. To view this item please click the Visit Link button above.</i>"];
 	}
 
-	[textView setHTML: fullText];
+	//[textView setHTML: fullText];
+	[web loadHTMLString: fullText baseURL:nil];
 	
 	[rs close];
 
 	//[db executeUpdate:@"update feedItems set hasViewed=1 where itemLink=? and feedsID=? and itemDateConv=?", _visitLink, [NSString stringWithFormat:@"%d", feedsID], _itemDateConv, nil];
 	[db executeUpdate:@"update feedItems set hasViewed=1 where itemLink=? and feedsID=?", _visitLink, [NSString stringWithFormat:@"%d", feedsID], nil];
 
-	[self addSubview: textView];
+	//[self addSubview: textView];
+	[scroller addSubview: web];
 	
 	[db close];
 	
@@ -140,6 +168,75 @@
 	//[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(addTextView:) userInfo:nil repeats:NO];
 
 	return self;
+}
+
+- (void) view: (id)v didDrawInRect: (CGRect)f duration: (float)d
+{
+	if (v == web)
+	{
+		[scroller setContentSize: CGSizeMake([web bounds].size.width,[web bounds].size.height+10.0f)];
+	}
+}
+
+- (void) view: (UIView*)v didSetFrame: (CGRect)f
+{
+	if (v == web)
+	{
+		[scroller setContentSize: CGSizeMake(f.size.width,f.size.height+10.0f)];
+	}
+}
+
+- (void)drawRect:(CGRect)rect
+{
+  // erase the background by drawing white
+  float grey[4] = {0.2, 0.2, 0.2, 1.0};
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  CGContextSetFillColorWithColor(UICurrentContext(), CGColorCreate(colorSpace, grey));
+  CGContextFillRect(UICurrentContext(), rect);
+}
+
+// Receive a progress update message from the browser
+- (void) _progressChanged: (NSNotification*)n
+{
+	if (![[n object] isLoading])
+	{
+		[nc removeObserver: self];
+
+		[mTransView transition: 6 toView: scroller];
+
+		[mProgress dismissAnimated:YES];
+	}
+}
+
+// Dismiss Javascript alerts and telephone confirms
+/*- (void)alertSheet:(UIAlertSheet*)sheet buttonClicked:(int)button
+{
+	if (button == 1)
+	{
+		[sheet setContext: nil];
+	}
+
+	[sheet dismiss];
+}*/
+
+// Javascript errors and logs
+- (void) webView: (WebView*)webView addMessageToConsole: (NSDictionary*)dictionary
+{
+	NSLog(@"Javascript log: %@", dictionary);
+}
+
+// Javascript alerts
+- (void) webView: (WebView*)webView runJavaScriptAlertPanelWithMessage: (NSString*) message initiatedByFrame: (WebFrame*) frame
+{
+	NSLog(@"Javascript Alert: %@", message);
+
+	UIAlertSheet *alertSheet = [[UIAlertSheet alloc] init];
+	[alertSheet setTitle: @"Javascript Alert"];
+	[alertSheet addButtonWithTitle: @"OK"];
+	[alertSheet setBodyText:message];
+	[alertSheet setDelegate: self];
+	[alertSheet setContext: self];
+	[alertSheet popupAlertAnimated:YES];
 }
 
 - (void) segmentedControl:(UISegmentedControl *)segment selectedSegmentChanged:(int)seg
@@ -284,7 +381,7 @@
 - (void) dealloc
 {
 	[navBar release];
-	[textView release];
+	//[textView release];
 	[super dealloc];
 }
 

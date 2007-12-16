@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>org.mobilestudio.mobilerss</string>
+	<string>com.google.code.mobile-rss</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/sbin/RSSDaemon</string>
+		<string>/usr/local/sbin/RSSDaemon</string>
 	</array>
 	<key>inetdCompatibility</key>
 	<false/>

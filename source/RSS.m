@@ -104,13 +104,13 @@ static NSRecursiveLock *lock;
 	//End Check if 1.4.1 Prefs file exists
 	
 	//Check if LaunchDaemon entry exists
-	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist" isDirectory: NO])
+	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/Library/LaunchDaemons/com.google.code.mobile-rss.plist" isDirectory: NO])
 	{
 		//HACK: It seems that Apple removed the NSFileManager copyPath:toPath:handler selector. Use system command.
-		NSString *cpCommand = @"/bin/cp /Applications/RSS.app/LaunchDaemon.plist /System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist";
+		NSString *cpCommand = @"/bin/cp /Applications/RSS.app/LaunchDaemon.plist /Library/LaunchDaemons/com.google.code.mobile-rss.plist";
 		system([cpCommand UTF8String]);
 
-		cpCommand = @"/bin/cp /Applications/RSS.app/RSSDaemon /sbin/RSSDaemon";
+		cpCommand = @"/bin/cp /Applications/RSS.app/RSSDaemon /usr/local/sbin/RSSDaemon";
 		system([cpCommand UTF8String]);
 	}
 
@@ -119,7 +119,7 @@ static NSRecursiveLock *lock;
 
 	if (FoundPID == -1)
 	{
-		NSString *launchctlCmd = @"launchctl load /System/Library/LaunchDaemons/org.mobilestudio.mobilerss.plist";
+		NSString *launchctlCmd = @"launchctl load /Library/LaunchDaemons/com.google.code.mobile-rss.plist";
 		system([launchctlCmd UTF8String]);
 	}
 
@@ -528,12 +528,12 @@ static NSRecursiveLock *lock;
 
 - (void) startAllRefresh
 {
-	_spinner = [[UIProgressIndicator alloc] initWithFrame: CGRectMake(80.0f, 13.0f, 20.0f, 20.0f)];
+	_spinner = [[[UIProgressIndicator alloc] initWithFrame: CGRectMake(80.0f, 13.0f, 20.0f, 20.0f)] autorelease];
 	[_spinner setAnimationDuration:1];
 	[_spinner startAnimation];
 	[botNavBar addSubview: _spinner];
 	
-	_spinnerLabel = [[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 13.0f, 150.0f, 20.0f)];
+	_spinnerLabel = [[[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 13.0f, 150.0f, 20.0f)] autorelease];
 	[_spinnerLabel setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:12]];
 	[_spinnerLabel setText: @"Refreshing All Feeds"];
 	[_spinnerLabel setBackgroundColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:0.0f]];
@@ -541,7 +541,7 @@ static NSRecursiveLock *lock;
 	[_spinnerLabel setWrapsText: NO];
 	[botNavBar addSubview: _spinnerLabel];
 	
-	[_spinnerLabel release];
+	//[_spinnerLabel release];
 
 	ThreadProcesses *_tproc = [[[ThreadProcesses alloc] init] autorelease];
 	[_tproc setDelegate: self];

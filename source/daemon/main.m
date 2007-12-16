@@ -23,8 +23,6 @@ int main(int argc, char *argv[])
 
 	RSSDaemon *rss = [[RSSDaemon alloc] autorelease];
 	[rss applicationDidFinishLaunching:nil];
-
-	[rss release];
 }
 
 //Takes the place of automatically generated objc function until the toolchain is fixed for this function
