@@ -8,6 +8,10 @@
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UISegmentedControl.h>
+#import <UIKit/UIWebView.h>
+#import <WebCore/WebFontCache.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <GraphicsServices/GraphicsServices.h>
 #import "EyeCandy.h"
 #import "Settings.h"
 #import "FMDatabase/FMDatabase.h"
@@ -32,6 +36,13 @@
 	NSString *_visitLink;
 	UINavigationBar *botNavBar;
 	UISegmentedControl *direcBtns;
+	UIWebView *web;
+	UIScroller *scroller;
+	WebView *mCoreWebView;
+	WebFrame *mFrame;
+	NSNotificationCenter *nc;
+	UITransitionView *mTransView;
+	UIAlertSheet *mProgress;
 }
 
 - (id) initWithFrame: (struct CGRect)rect withRow:(int)row withFeed:(int)feedsID;
