@@ -12,57 +12,49 @@
 	_font = [[_delegate fontForInt: 10] retain];
 
 	_settingsView = [[[Settings alloc] initWithFrame:rect withSettingsPath: [_delegate getSettingsPath]] retain];
+	//_settingsView = [[[Settings alloc] initWithFrame:rect withSettingsPath: [_delegate getSettingsPath]] autorelease];
 	[_settingsView setDelegate: self];
 
-	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)];
+	navBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)] autorelease];
 	[navBar showButtonsWithLeftTitle: @"Back" rightTitle:nil leftBack: TRUE];
     [navBar setBarStyle: 3];
 	[navBar setDelegate: self];
 	[self addSubview: navBar];
-	
-	UIImage *btnImage = [UIImage applicationImageNamed:@"getnew.png"];
-	UIPushButton *pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+
+	UIPushButton *pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: NO];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"getnew.png"] forState:0];
 	[pushButton addTarget: self action: @selector(startRefresh) forEvents: (1<<6)];
 	[navBar addSubview: pushButton];
 
-	[pushButton release];
-
-	botNavBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)];
+	botNavBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)] autorelease];
     [botNavBar setBarStyle: 3];
 	[botNavBar setDelegate: self];
-	
-	btnImage = [UIImage applicationImageNamed:@"delete.png"];
-	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+
+	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(0.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"delete.png"] forState:0];
 	[pushButton addTarget: self action: @selector(clearAllQ) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
-	
-	[pushButton release];
-	
-	btnImage = [UIImage applicationImageNamed:@"mark_all_read.png"];
-	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+
+	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"mark_all_read.png"] forState:0];
 	[pushButton addTarget: self action: @selector(markAll) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
-	
-	[pushButton release];
 
 	[self addSubview: botNavBar];
 
-	UITextLabel *_title = [[UITextLabel alloc] initWithFrame: CGRectMake(65.0f, 10.0f, 220.0f, 25.0f)];
+	UITextLabel *_title = [[[UITextLabel alloc] initWithFrame: CGRectMake(65.0f, 10.0f, 220.0f, 25.0f)] autorelease];
 	[_title setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:20]];
 	[_title setText: title];
 	[_title setCentersHorizontally: YES];
@@ -72,15 +64,13 @@
 
 	[self addSubview: _title];
 
-	[_title release];
-
-	_viewTable = [[UITable alloc] initWithFrame: CGRectMake(0.0f, 44.0f, 320.0f, rect.size.height - 88.0f)];
+	_viewTable = [[[UITable alloc] initWithFrame: CGRectMake(0.0f, 44.0f, 320.0f, rect.size.height - 88.0f)] autorelease];
 	[_viewTable setSeparatorStyle: 1];
 	[_viewTable setDelegate: self];
 	[_viewTable setDataSource: self];
 	[_viewTable setRowHeight: 32.0f];
 
-	_viewTableCol = [[UITableColumn alloc] initWithTitle: @"Feed Items" identifier:@"items" width: rect.size.width];
+	_viewTableCol = [[[UITableColumn alloc] initWithTitle: @"Feed Items" identifier:@"items" width: rect.size.width] autorelease];
 
 	[_viewTable addTableColumn: _viewTableCol];
 
@@ -139,20 +129,18 @@
 
 - (void) startRefresh
 {
-	_spinner = [[UIProgressIndicator alloc] initWithFrame: CGRectMake(80.0f, 13.0f, 20.0f, 20.0f)];
+	_spinner = [[[UIProgressIndicator alloc] initWithFrame: CGRectMake(80.0f, 13.0f, 20.0f, 20.0f)] autorelease];
 	[_spinner setAnimationDuration:1];
 	[_spinner startAnimation];
 	[botNavBar addSubview: _spinner];
 	
-	_spinnerLabel = [[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 13.0f, 150.0f, 20.0f)];
+	_spinnerLabel = [[[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 13.0f, 150.0f, 20.0f)] autorelease];
 	[_spinnerLabel setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:12]];
 	[_spinnerLabel setText: @"Refreshing Feed"];
 	[_spinnerLabel setBackgroundColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:0.0f]];
 	[_spinnerLabel setColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:1.0f]];
 	[_spinnerLabel setWrapsText: NO];
 	[botNavBar addSubview: _spinnerLabel];
-
-	[_spinnerLabel release];
 
 	ThreadProcesses *_tproc = [[[ThreadProcesses alloc] init] autorelease];
 	[_tproc setDelegate: self];
@@ -325,35 +313,49 @@
 
 - (void)alertSheet:(UIAlertSheet*)sheet buttonClicked:(int)button
 {
+	NSLog(@"here1");
 	if (sheet == alertSheetMarkAll)
 	{
+		NSLog(@"here2");
 		switch (button)
 		{
 			case 1:
+			NSLog(@"here3");
 				[self markAllRead];
+				NSLog(@"here4");
 			break;
 
 			case 2:
+			NSLog(@"here5");
 				[self markAllUnread];
+				NSLog(@"here6");
 			break;
 		}
 	}
 	else
 	{
+		NSLog(@"here7");
 		switch(button)
 		{
 			case 1:
+			NSLog(@"here8");
 				[self clearAll];
+				NSLog(@"here9");
 			break;
 
 			case 2:
+			NSLog(@"here10");
 				[self clearRead];
+				NSLog(@"here11");
 			break;
 		}
+		NSLog(@"here12");
 	}
-
+	NSLog(@"here13");
 	[sheet dismiss];
+	NSLog(@"here14");
 	[sheet release];
+	NSLog(@"here15");
 }
 
 - (void) clearSpinner
@@ -365,13 +367,13 @@
 	{
 		[[_delegate getFeedView] removeFromSuperview];
 
-		[_spinner release];
+		//[_spinner release];
 		[_eyeCandy release];
-		[_viewTableCol release];
-		[_viewTable release];
-		[botNavBar release];
-		[navBar release];
-		[_settingsView release];
+		//[_viewTableCol release];
+		//[_viewTable release];
+		//[botNavBar release];
+		//[navBar release];
+		//[_settingsView release];
 		
 		[self initWithFrame: rect withFeed: _feedsID withTitle:__title];
 
@@ -392,11 +394,11 @@
 - (void) dealloc
 {
 	[_eyeCandy release];
-	[_viewTableCol release];
-	[_viewTable release];
-	[botNavBar release];
+	//[_viewTableCol release];
+	//[_viewTable release];
+	//[botNavBar release];
 	[_settingsView release];
-	[navBar release];
+	//[navBar release];
 	[super dealloc];
 }
 

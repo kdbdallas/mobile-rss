@@ -86,7 +86,7 @@
 		{
 			if ([fileAttributes objectForKey:NSFileType] != NSFileTypeDirectory)
 			{
-				if ([[[dirArray objectAtIndex: i] pathExtension] isEqualToString: @"opml"] || [[[dirArray objectAtIndex: i] pathExtension] isEqualToString: @"rss"])
+				if ([[[dirArray objectAtIndex: i] pathExtension] isEqualToString: @"opml"] || [[[dirArray objectAtIndex: i] pathExtension] isEqualToString: @"rss"] || [[[dirArray objectAtIndex: i] pathExtension] isEqualToString: @"xml"])
 				{
 					[files addObject: [dirArray objectAtIndex: i]];
 				}
@@ -187,13 +187,24 @@
 			{
 				_TitleNode = [_childNode attributeForName:@"title"];
 				_URLNode = [_childNode attributeForName:@"xmlUrl"];
-			
-				NSString *_titleHolder = [_TitleNode stringValue];
 
 				NSMutableString *_urlHolder = [NSMutableString stringWithCapacity: 1];
 				[_urlHolder setString: [_URLNode stringValue]];
 
 				[_urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [_urlHolder length])];
+
+				NSString *_titleHolder = @"";
+				
+				if ([_TitleNode stringValue] != nil && ![[_TitleNode stringValue] isEqualToString: @""])
+				{
+					NSLog(@"has title: %@", [_TitleNode stringValue]);
+					_titleHolder = [_TitleNode stringValue];
+				}
+				else
+				{
+					NSLog(@"using url for title");
+					_titleHolder = _urlHolder;
+				}
 
 				// Process
 				rs = [db executeQuery:@"select feedsID, position from feeds where URL = ?", _urlHolder, nil];
@@ -218,13 +229,24 @@
 			{
 				_TitleNode = [childNode attributeForName:@"title"];
 				_URLNode = [childNode attributeForName:@"xmlUrl"];
-		
-				NSString *titleHolder = [_TitleNode stringValue];
 
 				NSMutableString *urlHolder = [NSMutableString stringWithCapacity: 1];
 				[urlHolder setString: [_URLNode stringValue]];
 
 				[urlHolder replaceOccurrencesOfString: @"feed://" withString: @"http://" options: NSCaseInsensitiveSearch range: NSMakeRange(0, [urlHolder length])];
+
+				NSString *titleHolder = @"";
+				
+				if ([_TitleNode stringValue] != nil && ![[_TitleNode stringValue] isEqualToString: @""])
+				{
+					NSLog(@"has title: %@", [_TitleNode stringValue]);
+					titleHolder = [_TitleNode stringValue];
+				}
+				else
+				{
+					NSLog(@"using url for title");
+					titleHolder = urlHolder;
+				}
 
 				// Process
 				rs = [db executeQuery:@"select feedsID, position from feeds where URL = ?", urlHolder, nil];

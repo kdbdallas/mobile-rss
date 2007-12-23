@@ -112,7 +112,8 @@
 		if ([currKey isEqualToString: @"KeepFeedsFor"])
 		{
 			_KeepFeedsFor = [[FeedsDict valueForKey: currKey] intValue];
-			_KeepFeedsFor = (_KeepFeedsFor * 604800);
+			//_KeepFeedsFor = (_KeepFeedsFor * 604800);
+			_KeepFeedsFor = (_KeepFeedsFor * 86400);
 		}
 		else if ([currKey isEqualToString: @"RefreshEvery"])
 		{
@@ -200,6 +201,11 @@
 				[_content addObjectsFromArray: returnArray];
 				[_feedCount addObject: [NSString stringWithFormat:@"%d", [returnArray count]]];
 				[_feedNames addObject: [[returnArray objectAtIndex: 0] objectForKey: @"feed"]];
+			}
+			else
+			{
+				[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
+				[_feedNames addObject: [rs stringForColumn: @"URL"]];
 			}
 		}
 

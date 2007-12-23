@@ -61,6 +61,10 @@
 					statusNodeEnumerator = [[childNode children] objectEnumerator];
 					break;
 				}
+				else if (([[childNode name] isEqualToString: @"entry"]))
+				{
+					statusNodeEnumerator = [[statusNode children] objectEnumerator];
+				}
 			}
 		}
 	}
