@@ -27,7 +27,7 @@ typedef enum _NSBitmapImageFileType {
 	// 1 = Red
 	// 2 = Blue Left Arrow
 	// 3 = Bright Blue
-	[navBar showLeftButton:@"Edit" withStyle:0 rightButton: @"Save" withStyle: 0];
+	[navBar showLeftButton:@"Add/Edit" withStyle:0 rightButton: @"Save" withStyle: 0];
     [navBar setBarStyle: 3];
 	[navBar enableAnimation];
 	[navBar setDelegate: self];
@@ -238,11 +238,11 @@ typedef enum _NSBitmapImageFileType {
 	
 	_isEditing = NO;
 
-	[navBar showButtonsWithLeftTitle: @"Make Editable" rightTitle:@"Save" leftBack: FALSE];
+	[navBar showButtonsWithLeftTitle: @"Add/Edit" rightTitle:@"Save" leftBack: FALSE];
 
 	int count = [feedEditors count];
 	
-	NSLog(@"feed: %@", feedEditors);
+	//NSLog(@"feed: %@", feedEditors);
 
 	[feedArray removeAllObjects];
 	[feedCellArray removeAllObjects];

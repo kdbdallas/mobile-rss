@@ -190,57 +190,48 @@ static NSRecursiveLock *lock;
 	_feeds = [[Feeds alloc] init];
 
 	// Main view Nav Bar
-	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)];
+	navBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)] autorelease];
 	[navBar showButtonsWithLeftTitle: @"Settings" rightTitle:nil leftBack: FALSE];
     [navBar setBarStyle: 3];
 	[navBar setDelegate: self];
-	
-	UIImage *btnImage = [UIImage applicationImageNamed:@"getnew.png"];
-	UIPushButton *pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+
+	UIPushButton *pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: NO];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"getnew.png"] forState:0];
 	[pushButton addTarget: self action: @selector(startAllRefresh) forEvents: (1<<6)];
 	[navBar addSubview: pushButton];
-	
-	[pushButton release];
 
 	// Add Nav Bar with Settings Btn to the main view
 	[mainView addSubview: navBar];
 
-	botNavBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)];
+	botNavBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, rect.size.height - 44.0f, 320.0f, 44.0f)] autorelease];
     [botNavBar setBarStyle: 3];
 	[botNavBar setDelegate: self];
 
-	btnImage = [UIImage applicationImageNamed:@"delete.png"];
-	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(0.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"delete.png"] forState:0];
 	[pushButton addTarget: self action: @selector(clearAllQ) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
 
-	[pushButton release];
-
-	btnImage = [UIImage applicationImageNamed:@"mark_all_read.png"];
-	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"mark_all_read.png"] forState:0];
 	[pushButton addTarget: self action: @selector(markAll) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
 
-	[pushButton release];
-
 	[mainView addSubview: botNavBar];
 
-	_title = [[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 12.0f, 150.0f, 20.0f)];
+	_title = [[[UITextLabel alloc] initWithFrame: CGRectMake(110.0f, 12.0f, 150.0f, 20.0f)] autorelease];
 	[_title setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:20]];
 	[_title setText: @"Mobile RSS"];
 	[_title setBackgroundColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:0.0f]];
@@ -248,8 +239,6 @@ static NSRecursiveLock *lock;
 	[_title setWrapsText: NO];
 
 	[mainView addSubview: _title];
-	
-	[_title release];
 
 	// Table to show feed items
 	_viewTable = [[UITable alloc] initWithFrame: CGRectMake(0.0f, 44.0f, 320.0f, rect.size.height - 88.0f)];
@@ -259,7 +248,7 @@ static NSRecursiveLock *lock;
 	[_viewTable setRowHeight: 32.0f];
 
 	// Col for the table that shows feeds items
-	_viewTableCol = [[UITableColumn alloc] initWithTitle: @"Feeds" identifier:@"feeds" width: rect.size.width];
+	_viewTableCol = [[[UITableColumn alloc] initWithTitle: @"Feeds" identifier:@"feeds" width: rect.size.width] autorelease];
 	
 	// Put the Col into the Table
 	[_viewTable addTableColumn: _viewTableCol];
@@ -285,18 +274,18 @@ static NSRecursiveLock *lock;
 - (void) clearAllQ
 {
 	// Alert sheet attached to bootom of Screen.
-	UIAlertSheet *alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0, 240, 320, 240)];
-	[alertSheet addButtonWithTitle:@"Delete All Feed Items"];
-	[alertSheet addButtonWithTitle:@"Delete All Read Items"];
-	[alertSheet addButtonWithTitle:@"Cancel"];
-	[alertSheet setDelegate:self];
+	clearAlertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0, 240, 320, 240)];
+	[clearAlertSheet addButtonWithTitle:@"Delete All Feed Items"];
+	[clearAlertSheet addButtonWithTitle:@"Delete All Read Items"];
+	[clearAlertSheet addButtonWithTitle:@"Cancel"];
+	[clearAlertSheet setDelegate:self];
 	
-	NSArray *btnArry = [alertSheet buttons];
+	NSArray *btnArry = [clearAlertSheet buttons];
 	
-	[alertSheet setDefaultButton: [btnArry objectAtIndex: 2]];
+	[clearAlertSheet setDefaultButton: [btnArry objectAtIndex: 2]];
 
-	[alertSheet setAlertSheetStyle: 1];
-	[alertSheet presentSheetFromAboveView:botNavBar];
+	[clearAlertSheet setAlertSheetStyle: 1];
+	[clearAlertSheet presentSheetFromAboveView:botNavBar];
 }
 
 - (void) clearRead
@@ -553,16 +542,16 @@ static NSRecursiveLock *lock;
 {
 	if ([window contentView] == mainView)
 	{
-		[_spinner release];
+		//[_spinner release];
 
 		[mainView removeFromSuperview];
 
-		[_viewTableCol release];
-		[_viewTable release];
-		[botNavBar release];
-		[navBar release];
-		[_feeds release];
-		[_settingsView release];
+		//[_viewTableCol release];
+		//[_viewTable release];
+		//[botNavBar release];
+		//[navBar release];
+		//[_feeds release];
+		//[_settingsView release];
 		[transitionView release];
 		[mainView release];
 		[window release];
@@ -586,6 +575,17 @@ static NSRecursiveLock *lock;
 - (UIWindow*) getWindow
 {
 	return window;
+}
+
+- (void) showErrGetFeed: (NSString*)url
+{
+	UIAlertSheet *errAlertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0, 240, 320, 240)];
+	[errAlertSheet setTitle:@"Error Getting Feed"];
+	[errAlertSheet setBodyText:[[@"Could not access feed: " stringByAppendingString: url] stringByAppendingString: @"\nPlease check the url and try again."]];
+	[errAlertSheet addButtonWithTitle:@"Close"];
+	[errAlertSheet setDelegate:self];
+	[errAlertSheet setAlertSheetStyle: 1];
+	[errAlertSheet presentSheetFromAboveView:botNavBar];
 }
 
 - (NSString*) getSettingsDIR
@@ -621,16 +621,14 @@ static NSRecursiveLock *lock;
 	[_viewTable selectRow: -1 byExtendingSelection: NO];
 
 	[_settingsView addSubview:transitionView];
+
 	[transitionView transition:2 fromView:_settingsView toView:mainView];
+
 	[window setContentView: mainView];
-	
+
 	[_settingsView removeFromSuperview];
-	[_viewTableCol release];
+
 	[_viewTable release];
-	[botNavBar release];
-	[navBar release];
-	[_feeds release];
-	[_settingsView release];
 	[transitionView release];
 	[mainView release];
 	[window release];
@@ -727,12 +725,12 @@ static NSRecursiveLock *lock;
 	[window setContentView: mainView];
 	
 	[_feedView removeFromSuperview];
-	[_viewTableCol release];
-	[_viewTable release];
-	[botNavBar release];
-	[navBar release];
-	[_feeds release];
-	[_settingsView release];
+	//[_viewTableCol release];
+	//[_viewTable release];
+	//[botNavBar release];
+	//[navBar release];
+	//[_feeds release];
+	//[_settingsView release];
 	[transitionView release];
 	[mainView release];
 	[window release];
@@ -794,7 +792,7 @@ static NSRecursiveLock *lock;
 			break;
 		}
 	}
-	else
+	else if (sheet == clearAlertSheet)
 	{
 		switch(button)
 		{
@@ -851,12 +849,12 @@ static NSRecursiveLock *lock;
 	// close the database
 	[db close];
 	[_eyeCandy release];
-	[settingsPath release];
-	[_content release];
-	[_viewTableCol release];
+	//[settingsPath release];
+	//[_content release];
+	//[_viewTableCol release];
 	[_viewTable release];
-	[botNavBar release];
-	[navBar release];
+	//[botNavBar release];
+	//[navBar release];
 	[_feeds release];
 	[_settingsView release];
 	[transitionView release];
@@ -911,7 +909,13 @@ static NSRecursiveLock *lock;
 
 	[rs next];
 
-	NSString *_feedName = [rs stringForColumn: @"feed"];
+	NSString *_feedName = @"";
+	
+	if ([rs stringForColumn: @"feed"] != nil)
+	{
+		_feedName = [rs stringForColumn: @"feed"];
+	}
+
 	NSString *feedID = [NSString stringWithFormat:@"%d", [rs intForColumn: @"feedsID"]];
 
 	[rs close];

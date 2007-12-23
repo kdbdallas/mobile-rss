@@ -49,6 +49,7 @@
 	int storedRefresh;
 	int storedFont;
 	NSDictionary *plistDict;
+	UIPushButton *pushButton;
 }
 
 - (id) initWithFrame: (struct CGRect)rect withSettingsPath: (NSString*)settingsPath;

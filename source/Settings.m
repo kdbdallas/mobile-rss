@@ -16,20 +16,20 @@
 	transitionView = [[UITransitionView alloc] initWithFrame:rect];
 	[self addSubview:transitionView];
 
-	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 40.0f)];
+	navBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 40.0f)] autorelease];
 	[navBar showButtonsWithLeftTitle: @"Cancel" rightTitle:@"Save" leftBack: FALSE];
     [navBar setBarStyle: 3];
 	[navBar enableAnimation];
 	[navBar setDelegate: self];
 	[self addSubview: navBar];
 
-	UITextLabel *_title = [[UITextLabel alloc] initWithFrame: CGRectMake(130.0f, 9.0f, 140.0f, 20.0f)];
+	UITextLabel *_title = [[[UITextLabel alloc] initWithFrame: CGRectMake(130.0f, 9.0f, 140.0f, 20.0f)] autorelease];
 	[_title setFont:[NSClassFromString(@"WebFontCache") createFontWithFamily:@"Helvetica" traits:2 size:14]];
 	[_title setText: @"Settings"];
 	[_title setBackgroundColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:0.0f]];
 	[_title setColor: [UIView colorWithRed:52.0f green:154.0f blue:243.0f alpha:1.0f]];
 	[_title setWrapsText: NO];
-	
+
 	[self addSubview: _title];
 
 	_prefsTable = [[UIPreferencesTable alloc] initWithFrame: CGRectMake(0.0f, 40.0f, 320.0f, rect.size.height - 40.0f)];
@@ -54,7 +54,7 @@
 	CGRect sliderRect = CGRectMake(20.0f, 8.0f, 296.0f - 20.0f, 32.0f);
 
 	_keepForTitleCell = [[UIPreferencesTableCell alloc] init];
-	[_keepForTitleCell setTitle: @"Keep Feed Items for (in Weeks)"];
+	[_keepForTitleCell setTitle: @"Keep Feed Items for (in Days)"];
 
 	_keepForCell = [[UIPreferencesTableCell alloc] init];
 	_keepForSlider = [[UISliderControl alloc] initWithFrame: sliderRect];
@@ -103,14 +103,12 @@
 
 	[refreshPicker columnForTable: _pickerCol];
 
-	UIImage *btnImage = [UIImage applicationImageNamed:@"paypal.png"];
-
-	UIPushButton *pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
+	pushButton = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
 	[pushButton setFrame: CGRectMake(129.0, 420.0f, 62.0, 31.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"paypal.png"] forState:0];
 	[pushButton addTarget: self action: @selector(donate) forEvents: 1];
 	
 	[self addSubview: pushButton];
@@ -149,7 +147,7 @@
 - (void) readSettings: (NSString*)path
 {
 	_settingsPath = [path retain];
-	
+
 	NSDictionary *settingsDict;
 
 	if ([[NSFileManager defaultManager] isReadableFileAtPath: [_settingsPath retain]])
@@ -160,10 +158,10 @@
 	{
 		settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/Applications/RSS.app/Default.plist"];
 	}
-	
+
 	NSEnumerator *enumerator = [settingsDict keyEnumerator];
 	NSString *currKey;
-	
+
 	while (currKey = [enumerator nextObject])
 	{
 		if ([currKey isEqualToString: @"RefreshEvery"])
@@ -195,7 +193,7 @@
 	NSString *error;
 	NSString *tmpString;
 
-	NSMutableDictionary *settingsDict = [[NSMutableDictionary alloc] initWithCapacity: 1];
+	NSMutableDictionary *settingsDict = [[[NSMutableDictionary alloc] initWithCapacity: 1] autorelease];
 
 	tmpString = [NSString stringWithFormat:@"%d", storedRefresh];
 	[settingsDict setObject:tmpString forKey: @"RefreshEvery"];
@@ -264,10 +262,22 @@
 
 - (void) dealloc
 {
+	[pushButton release];
+	[_pickerCol release];
+	[refreshPicker release];
+	[_refreshEveryCell release];
+	[fontChooser release];
+	[_fontSizeSlider release];
+	[_fontSizeCell release];
+	[_chooseFontCell release];
+	[_keepForSlider release];
+	[_keepForCell release];
+	[_keepForTitleCell release];
+	[_importFeeds release];
+	[_manageFeeds release];
 	[_prefsTable release];
 	[_keepForCell release];
 	[_keepForSlider release];
-
 	[super dealloc];
 }
 
@@ -282,6 +292,7 @@
 		case 1:
 			// Feed List View
 			_FeedListView = [[[FeedList alloc] initWithFrame:rect withSettingsPath: [_settingsPath retain]] retain];
+			//_FeedListView = [[[FeedList alloc] initWithFrame:rect withSettingsPath: [_settingsPath retain]] autorelease];
 			[_FeedListView setDelegate: self];
 
 			[transitionView transition:6 fromView:self toView:_FeedListView];
@@ -293,6 +304,7 @@
 		case 2:
 			// Import View
 			_ImportView = [[[Import alloc] initWithFrame: rect] retain];
+			//_ImportView = [[[Import alloc] initWithFrame: rect] autorelease];
 			[_ImportView setDelegate: self];
 
 			[transitionView transition:6 fromView:self toView:_ImportView];

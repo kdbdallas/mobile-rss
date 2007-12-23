@@ -33,12 +33,12 @@
 	UITable *_viewTable;
 	UITableColumn *_viewTableCol;
 	UITransitionView *transitionView;
-	NSString *settingsPath;
+	//NSString *settingsPath;
 	Settings *_settingsView;
 	EyeCandy *_eyeCandy;
 	Feeds *_feeds;
 	UIProgressHUD *progress;
-	NSMutableArray *_content;
+	//NSMutableArray *_content;
 	ItemView *_itemViewView;
 	NSString *_appLibraryPath;
 	BOOL DBExists;
@@ -53,6 +53,7 @@
 	UITextLabel *_spinnerLabel;
 	UIAlertSheet *alertSheetMarkAll;
 	UITextLabel *_title;
+	UIAlertSheet *clearAlertSheet;
 }
 
 - (void) processPlistWithPath:(id)param;
@@ -67,6 +68,7 @@
 - (void) clearAll;
 - (void) clearRead;
 - (void) reloadTable;
+- (void) showErrGetFeed: (NSString*)url;
 - (void) clearSpinner;
 - (void) markAllUnread;
 - (void) showFeed: (int)row;

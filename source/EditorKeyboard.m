@@ -67,6 +67,9 @@ int m_preferredKeyboardType = 3;
 {
     [self setTransform:CGAffineTransformMake(1,0,0,1,0,0)];
     [self setFrame:CGRectMake(0.0f, 480.0, 320.0f, 480.0f)];
+	
+	//[self setPreferredKeyboardType: 3];
+	//[self showPreferredLayout];
 
     struct CGAffineTransform trans =
 	CGAffineTransformMakeTranslation(0, -235);

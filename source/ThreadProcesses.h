@@ -9,6 +9,7 @@
 @protocol threadProcessesDelegateProto
 	- (int) getFeedsID;
 	- (void) clearSpinner;
+	- (void) showErrGetFeed: (NSString*)url;
 @end
 
 @interface ThreadProcesses : UIApplication {

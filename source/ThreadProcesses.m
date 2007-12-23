@@ -17,6 +17,7 @@
 	NSMutableArray *__content = [NSMutableArray arrayWithCapacity:1];
 	
 	Feeds *_feeds = [[Feeds alloc] init];
+	[_feeds setDelegate: self];
 
 	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
 
@@ -43,6 +44,13 @@
 
 			[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
 			[_feedNames addObject: [[[_feeds returnArray] objectAtIndex: 0] objectForKey: @"feed"]];
+		}
+		else
+		{
+			[_feed addObject: [rs stringForColumn: @"feedsID"]];
+
+			[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
+			[_feedNames addObject: [rs stringForColumn: @"URL"]];
 		}
 	}
 
@@ -112,6 +120,11 @@
 	[pool release];
 }
 
+- (void) showErrGetFeed: (NSString*)url
+{
+	[_delegate showErrGetFeed:url];
+}
+
 - (void) refreshSingleFeed:(id)param
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -148,7 +161,21 @@
 		[__content addObjectsFromArray: [_feeds returnArray]];
 
 		[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
-		[_feedNames addObject: [[[_feeds returnArray] objectAtIndex: 0] objectForKey: @"feed"]];
+		NSLog(@"bla1");
+		NSLog(@"%@", [_feeds returnArray]);
+		NSLog(@"count %d", [[_feeds returnArray] count]);
+		
+		if ([[_feeds returnArray] count] > 0)
+		{
+			NSLog(@"bbbb");
+			[_feedNames addObject: [[[_feeds returnArray] objectAtIndex: 0] objectForKey: @"feed"]];
+		}
+		else
+		{
+			NSLog(@"bbbb2");
+			[_feedNames addObject: [rs stringForColumn: @"URL"]];
+		}
+		NSLog(@"bla2");
 	}
 
 	[rs close];
@@ -202,7 +229,7 @@
 			[rs close];
 		}
 	}
-
+	
 	[self performSelectorOnMainThread:@selector(DBUpdated:) withObject:nil waitUntilDone:NO];
 
 	[db close];

@@ -119,7 +119,9 @@
 
 	_visitLink = [[rs stringForColumn: @"itemLink"] retain];
 
-	NSMutableString *fullText = [[[NSMutableString alloc] initWithString: @"<b>"] autorelease];
+	NSMutableString *fullText = [[[NSMutableString alloc] initWithString: @"<div style='width: 315px;'>"] autorelease];
+	
+	[fullText appendString:@"<b>"];
 
 	if ([rs stringForColumn: @"itemTitle"] != nil)
 	{
@@ -148,6 +150,8 @@
 	{
 		[fullText appendString:@"<i>The feed did not supply the text of this item. To view this item please click the Visit Link button above.</i>"];
 	}
+	
+	[fullText appendString:@"</div>"];
 
 	//[textView setHTML: fullText];
 	[web loadHTMLString: fullText baseURL:nil];
