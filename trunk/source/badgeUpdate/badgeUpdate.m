@@ -6,7 +6,28 @@ static NSRecursiveLock *lock;
 
 - (void) applicationDidFinishLaunching: (id) unused
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 

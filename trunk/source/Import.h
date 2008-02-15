@@ -38,6 +38,9 @@
 	NSFileManager *NSFm;
 	NSXMLDocument *xmlDoc;
 	EyeCandy *_eyeCandy;
+	NSString *uplocation;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (id) initWithFrame: (struct CGRect)rect;

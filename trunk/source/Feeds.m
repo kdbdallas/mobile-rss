@@ -10,7 +10,7 @@
 	
 	//_URL = [FeedURL retain];
 	
-	NSLog(@"feedURL: %@", FeedURL);
+	//NSLog(@"feedURL: %@", FeedURL);
 	//NSMutableURLRequest *theRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FeedURL] cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 	
 	//rssData = [NSURLConnection sendSynchronousRequest: theRequest returningResponse: &response error: &error];
@@ -33,7 +33,6 @@
 
 - (NSMutableArray*) processXML:(NSData*)data withURL:(NSString*)url
 {
-	NSLog(@"here start");
 	NSError *err = nil;
 	NSEnumerator *childNodeEnum;
 	NSEnumerator *itemEnum;
@@ -54,7 +53,7 @@
 		in the OfficeImport framework. So we resolve the symbol at runtime. */
 		xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:data options:NSXMLNodeOptionsNone error:&err] autorelease];
 
-		NSLog(@"xmlDoc: %@", xmlDoc);
+		//NSLog(@"xmlDoc: %@", xmlDoc);
 
 		if ([[xmlDoc children] count] > 0)
 		{	
@@ -68,18 +67,14 @@
 		
 				if ((![[statusNode name] isEqualToString: @"channel"]) || (![[statusNode name] isEqualToString: @"feed"]))
 				{
-					NSLog(@"got here");
 					childNodeEnum = [[statusNode children] objectEnumerator];
 
 					while ((childNode = [childNodeEnum nextObject]))
 					{
-						NSLog(@"got here0.5 %@", [childNode name]);
 						if (([[childNode name] isEqualToString: @"channel"]) || ([[childNode name] isEqualToString: @"feed"]))
 						{
-							NSLog(@"got here1");
 							if ([[statusNode name] isEqualToString: @"feed"])
 							{
-								NSLog(@"got here2");
 								wasAtom = true;
 							}
 
@@ -103,14 +98,12 @@
 			//First should be channel
 			while ((statusNode = [statusNodeEnumerator nextObject]))
 			{
-				NSLog(@"got here3");
 				//NSLog(@"%@", statusNode);
 		
 				NSMutableDictionary *content = [[[NSMutableDictionary alloc] init] autorelease];
 		
 				if ([[statusNode name] isEqualToString:@"title"] && hasTitle == false)
 				{
-					NSLog(@"got here4");
 					[content setValue:[statusNode stringValue] forKey:@"feed"];
 
 					groupTitle = [statusNode stringValue];
@@ -315,8 +308,6 @@
 
 		[_delegate performSelectorOnMainThread:@selector(showErrGetFeed:) withObject:url waitUntilDone:NO];
 	}
-	
-	NSLog(@"here end");
 
 	return nil;
 }

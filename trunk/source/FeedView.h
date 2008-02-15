@@ -48,6 +48,8 @@
 	UITextLabel *_spinnerLabel;
 	NSString *__title;
 	UIAlertSheet *alertSheetMarkAll;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (id) initWithFrame: (struct CGRect)rect withFeed:(int)feedID withTitle:(NSString*)title;

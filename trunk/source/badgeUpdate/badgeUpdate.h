@@ -6,6 +6,8 @@
 
 @interface badgeUpdate : UIApplication {
 	FMDatabase *db;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (void) updateAppBadge:(NSString*)value;

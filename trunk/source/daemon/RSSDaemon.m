@@ -61,9 +61,30 @@
 
 - (int) getNextRun
 {
-	if ([[NSFileManager defaultManager] isReadableFileAtPath: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist"])
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
 	{
-		NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist"];
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	if ([[NSFileManager defaultManager] isReadableFileAtPath: [libLocation stringByAppendingString: @"/MobileRSS/rss.launchd.nextrun.plist"]])
+	{
+		NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: [libLocation stringByAppendingString: @"/MobileRSS/rss.launchd.nextrun.plist"]];
 
 		NSEnumerator *enumerator = [settingsDict keyEnumerator];
 		NSString *currKey;
@@ -89,15 +110,36 @@
 	NSMutableDictionary *settingsDict = [[NSMutableDictionary alloc] initWithCapacity: 1];
 
 	NSString *tmpString = [NSString stringWithFormat:@"%d", nextRun];
-	NSLog(@"Next Run: %@", tmpString);
+	//NSLog(@"Next Run: %@", tmpString);
 
 	[settingsDict setObject:tmpString forKey: @"NextRun"];
 
 	//Seralize settings dictionary
 	NSData *rawPList = [NSPropertyListSerialization dataFromPropertyList: settingsDict format: NSPropertyListXMLFormat_v1_0 errorDescription: &error];
 
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+
 	//Write settings plist file
-	[rawPList writeToFile: @"/var/root/Library/Preferences/MobileRSS/rss.launchd.nextrun.plist" atomically: YES];
+	[rawPList writeToFile: [libLocation stringByAppendingString: @"/MobileRSS/rss.launchd.nextrun.plist"] atomically: YES];
 }
 
 - (void) processPlistWithPath
@@ -159,8 +201,6 @@
 
 - (void) refreshAllFeeds
 {
-	NSLog(@"Refreshing Feeds");
-
 	pid_t FoundPID = [self FindPID];
 
 	if (FoundPID == -1)
@@ -177,8 +217,29 @@
 		NSMutableArray *_feedNames = [NSMutableArray arrayWithCapacity:1];
 
 		_content = [NSMutableArray arrayWithCapacity:1];
+		
+		NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+		firmwareVersion = [[procInfo operatingSystemVersionString] retain];
 
-		NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+		BOOL isDir = YES;
+
+		if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+		{
+			if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+			{
+				libLocation = @"/var/mobile/Library/Preferences/";
+			}
+			else
+			{
+				libLocation = @"/var/root/Library/Preferences/";
+			}
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+
+		NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 		db = [FMDatabase databaseWithPath: DBFile];
 
@@ -240,7 +301,7 @@
 
 							if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
 							{
-								itemDateConv = [NSCalendarDate  date];
+								itemDateConv = [NSString stringWithFormat:@"%@", [NSCalendarDate  date]];
 							}
 							else
 							{
@@ -248,7 +309,7 @@
 								itemDateConv = [_itemDateConv description];
 							}
 
-							[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+							[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSString stringWithFormat:@"%@", [NSCalendarDate  date]], nil];
 						}
 					}
 					else
@@ -274,7 +335,7 @@
 		while ([_rs next])
 		{
 			NSDate *_dateAdded = [_rs dateForColumn: @"dateAdded"];
-			NSTimeInterval _timeOld = [[NSCalendarDate date] timeIntervalSinceDate: _dateAdded];
+			NSTimeInterval _timeOld = [[NSCalendarDate  date] timeIntervalSinceDate: _dateAdded];
 
 			if (_timeOld > _KeepFeedsFor)
 			{
