@@ -460,7 +460,28 @@ typedef enum _NSBitmapImageFileType {
 	FMResultSet *rs;
 	FMDatabase *db;
 
-	NSString *_appLibraryPath = @"/var/root/Library/Preferences/MobileRSS";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+
+	NSString *_appLibraryPath = [libLocation stringByAppendingString: @"/MobileRSS"];
 	NSString *DBFile = [_appLibraryPath stringByAppendingPathComponent: @"rss.db"];
 
 	if (![[NSFileManager defaultManager] fileExistsAtPath: _appLibraryPath isDirectory: &isDir])

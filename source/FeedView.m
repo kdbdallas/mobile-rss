@@ -186,7 +186,28 @@
 
 - (void) clearRead
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"/MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -224,7 +245,25 @@
 
 - (void) clearAll
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -279,7 +318,28 @@
 
 - (void) markAllRead
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"/MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -296,7 +356,28 @@
 
 - (void) markAllUnread
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -313,49 +394,35 @@
 
 - (void)alertSheet:(UIAlertSheet*)sheet buttonClicked:(int)button
 {
-	NSLog(@"here1");
 	if (sheet == alertSheetMarkAll)
 	{
-		NSLog(@"here2");
 		switch (button)
 		{
 			case 1:
-			NSLog(@"here3");
 				[self markAllRead];
-				NSLog(@"here4");
 			break;
 
 			case 2:
-			NSLog(@"here5");
 				[self markAllUnread];
-				NSLog(@"here6");
 			break;
 		}
 	}
 	else
 	{
-		NSLog(@"here7");
 		switch(button)
 		{
 			case 1:
-			NSLog(@"here8");
 				[self clearAll];
-				NSLog(@"here9");
 			break;
 
 			case 2:
-			NSLog(@"here10");
 				[self clearRead];
-				NSLog(@"here11");
 			break;
 		}
-		NSLog(@"here12");
 	}
-	NSLog(@"here13");
+
 	[sheet dismiss];
-	NSLog(@"here14");
 	[sheet release];
-	NSLog(@"here15");
 }
 
 - (void) clearSpinner

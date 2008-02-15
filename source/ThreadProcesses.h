@@ -15,6 +15,8 @@
 @interface ThreadProcesses : UIApplication {
 	id<threadProcessesDelegateProto> _delegate;
 	EyeCandy *_eyeCandy;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (void) refreshAllFeeds:(id)param;

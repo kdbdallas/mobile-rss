@@ -43,6 +43,8 @@
 	NSNotificationCenter *nc;
 	UITransitionView *mTransView;
 	UIAlertSheet *mProgress;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (id) initWithFrame: (struct CGRect)rect withRow:(int)row withFeed:(int)feedsID;

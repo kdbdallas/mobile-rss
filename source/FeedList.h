@@ -55,6 +55,8 @@
 	QuickAdd *_QuickAddView;
 	int deletingRow;
 	EyeCandy *_eyeCandy;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (id) initWithFrame: (struct CGRect)rect withSettingsPath: (NSString*)settingsPath;

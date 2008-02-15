@@ -31,8 +31,31 @@
 	_infoTitle = [[[UIPreferencesTableCell alloc] init] retain];
 	[_infoTitle setTitle: @"Select a file to import from the list below"];
 
+	BOOL isDir = YES;
+	
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			uplocation = @"/var/mobile/";
+		}
+		else
+		{
+			uplocation = @"/var/root/";
+		}
+	}
+	else
+	{
+		uplocation = @"/var/root/";
+	}
+
+	NSString *filepath = [@"Place OPML files in " stringByAppendingString: uplocation];
+
 	_infoText = [[[UIPreferencesTableCell alloc] init] retain];
-	[_infoText setTitle: @"Place OPML files in /var/root/"];
+	[_infoText setTitle: filepath];
 
 	CGRect switchRect = CGRectMake(rect.size.width - 114.0f, 9.0f, 96.0f, 32.0f);
 
@@ -70,17 +93,35 @@
 
 - (void) lookForFiles
 {
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/";
+		}
+		else
+		{
+			libLocation = @"/var/root/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/";
+	}
+	
 	int n, i;
 	NSDictionary *fileAttributes;
 	
 	NSFm = [NSFileManager defaultManager];
-	NSArray *dirArray = [NSFm directoryContentsAtPath: @"/var/root/"];
+	NSArray *dirArray = [NSFm directoryContentsAtPath: libLocation];
 
 	n = [dirArray count];
 
 	for (i = 0; i < n; ++i)
 	{
-		fileAttributes = [NSFm fileAttributesAtPath:[@"/var/root/" stringByAppendingString:[dirArray objectAtIndex: i]] traverseLink:YES];
+		fileAttributes = [NSFm fileAttributesAtPath:[libLocation stringByAppendingString:[dirArray objectAtIndex: i]] traverseLink:YES];
 
 		if (fileAttributes != nil)
 		{
@@ -110,15 +151,35 @@
 	FMResultSet *rs;
 	FMDatabase *db;
 	int index = 0;
+	NSString *fileLocation;
 
 	int row = [importTable selectedRow];
+	
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+			fileLocation = @"/var/mobile/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+			fileLocation = @"/var/root/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+		fileLocation = @"/var/root/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
-
-	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/MobileRSS" isDirectory: &isDir])
+	if (![[NSFileManager defaultManager] fileExistsAtPath: [libLocation stringByAppendingString: @"MobileRSS"] isDirectory: &isDir])
 	{
 		// Ensure library directories exsist
-		[[NSFileManager defaultManager] createDirectoryAtPath: @"/var/root/Library/Preferences/MobileRSS" attributes: nil];
+		[[NSFileManager defaultManager] createDirectoryAtPath: [libLocation stringByAppendingString: @"MobileRSS"] attributes: nil];
 	}
 
 	isDir = NO;
@@ -151,7 +212,7 @@
 	}
 	else
 	{
-		// If we just created the DB above, then there is no need to see if we need to clear it but it already is
+		// If we just created the DB above, then there is no need to see if we need to clear it because it already is
 		if ([_overwriteSwitch value] != 0)
 		{
 			[db executeUpdate:@"delete from feedItems", nil];
@@ -159,7 +220,7 @@
 		}
 	}
 
-	NSData *contents = [NSFm contentsAtPath: [@"/var/root/" stringByAppendingString: [files objectAtIndex: [importTable selectedRow]]]];
+	NSData *contents = [NSFm contentsAtPath: [fileLocation stringByAppendingString: [files objectAtIndex: [importTable selectedRow]]]];
 
 	xmlDoc = [[[NSClassFromString(@"NSXMLDocument") alloc] initWithData:contents options:NSXMLNodeOptionsNone error:&err] autorelease];
 
@@ -239,12 +300,12 @@
 				
 				if ([_TitleNode stringValue] != nil && ![[_TitleNode stringValue] isEqualToString: @""])
 				{
-					NSLog(@"has title: %@", [_TitleNode stringValue]);
+					//NSLog(@"has title: %@", [_TitleNode stringValue]);
 					titleHolder = [_TitleNode stringValue];
 				}
 				else
 				{
-					NSLog(@"using url for title");
+					//NSLog(@"using url for title");
 					titleHolder = urlHolder;
 				}
 

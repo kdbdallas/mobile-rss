@@ -16,6 +16,8 @@
 	NSString *_settingsPath;
 	NSDictionary *plistDict;
 	Feeds *_feeds;
+	NSString *firmwareVersion;
+	NSString *libLocation;
 }
 
 - (void) applicationDidFinishLaunching: (id) unused;

@@ -19,7 +19,28 @@
 	Feeds *_feeds = [[Feeds alloc] init];
 	[_feeds setDelegate: self];
 
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	FMDatabase *_db = [FMDatabase databaseWithPath: DBFile];
 
@@ -31,7 +52,7 @@
 
 	while ([rs next])
 	{
-		NSLog(@"Getting Feed: %@", [rs stringForColumn: @"URL"]);
+		//NSLog(@"Getting Feed: %@", [rs stringForColumn: @"URL"]);
 
 		[_feeds initArray];
 		[_feeds pullFeedURL: [rs stringForColumn: @"URL"]];
@@ -86,7 +107,7 @@
 
 						if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
 						{
-							itemDateConv = [NSCalendarDate  date];
+							itemDateConv = [NSString stringWithFormat:@"%@", [NSCalendarDate  date]];
 							_itemDateConv = [NSDate dateWithNaturalLanguageString: itemDateConv];
 							itemDateConv = [_itemDateConv description];
 						}
@@ -96,7 +117,7 @@
 							itemDateConv = [_itemDateConv description];
 						}
 
-						[_db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+						[_db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSString stringWithFormat:@"%@", [NSCalendarDate  date]], nil];
 					}
 				}
 				else
@@ -112,11 +133,11 @@
 			fullIndex = fullIndex + 1;
 		}
 	}
-
+	NSLog(@"Done, now dbupdate");
 	[self performSelectorOnMainThread:@selector(DBUpdated:) withObject:nil waitUntilDone:NO];
-
+	NSLog(@"done, now db close");
 	[_db close];
-
+	NSLog(@"done, now pool release");
 	[pool release];
 }
 
@@ -131,7 +152,7 @@
 
 	int feedsID = (int)[_delegate getFeedsID];
 
-	NSLog(@"Refreshing Single Feed: %d", feedsID);
+	//NSLog(@"Refreshing Single Feed: %d", feedsID);
 
 	int index;
 	int i = 0;
@@ -141,7 +162,28 @@
 
 	Feeds *_feeds = [[Feeds alloc] init];
 
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	FMDatabase *db = [FMDatabase databaseWithPath: DBFile];
 
@@ -153,7 +195,7 @@
 
 	while ([rs next])
 	{
-		NSLog(@"Getting Feed: %@", [rs stringForColumn: @"URL"]);
+		//NSLog(@"Getting Feed: %@", [rs stringForColumn: @"URL"]);
 
 		[_feeds initArray];
 		[_feeds pullFeedURL: [rs stringForColumn: @"URL"]];
@@ -161,21 +203,21 @@
 		[__content addObjectsFromArray: [_feeds returnArray]];
 
 		[_feedCount addObject: [NSString stringWithFormat:@"%d", [[_feeds returnArray] count]]];
-		NSLog(@"bla1");
-		NSLog(@"%@", [_feeds returnArray]);
-		NSLog(@"count %d", [[_feeds returnArray] count]);
+		//NSLog(@"bla1");
+		//NSLog(@"%@", [_feeds returnArray]);
+		//NSLog(@"count %d", [[_feeds returnArray] count]);
 		
 		if ([[_feeds returnArray] count] > 0)
 		{
-			NSLog(@"bbbb");
+			//NSLog(@"bbbb");
 			[_feedNames addObject: [[[_feeds returnArray] objectAtIndex: 0] objectForKey: @"feed"]];
 		}
 		else
 		{
-			NSLog(@"bbbb2");
+			//NSLog(@"bbbb2");
 			[_feedNames addObject: [rs stringForColumn: @"URL"]];
 		}
-		NSLog(@"bla2");
+		//NSLog(@"bla2");
 	}
 
 	[rs close];
@@ -208,7 +250,7 @@
 
 					if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
 					{
-						itemDateConv = [NSCalendarDate  date];
+						itemDateConv = [NSString stringWithFormat:@"%@", [NSCalendarDate  date]];
 					}
 					else
 					{
@@ -216,7 +258,7 @@
 						itemDateConv = [_itemDateConv description];
 					}
 
-					[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], [NSString stringWithFormat:@"%@", itemDateConv], [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+					[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [NSString stringWithFormat:@"%d", feedsID], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], [NSString stringWithFormat:@"%@", itemDateConv], [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSString stringWithFormat:@"%@", [NSCalendarDate  date]], nil];
 				}
 			}
 			else

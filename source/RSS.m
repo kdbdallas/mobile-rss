@@ -20,19 +20,40 @@ static NSRecursiveLock *lock;
 	
 	BOOL isDir;
 	NSString *DBFile;
+	
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
 
 	//Check if 1.4.1 Prefs file exists
-	if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" isDirectory: NO])
+	/*if ([[NSFileManager defaultManager] fileExistsAtPath: [libLocation stringByAppendingString: @"/com.google.code.mobile-rss.plist"] isDirectory: NO])
 	{
 		DBExists = NO;
 		isDir = YES;
 		
-		DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+		DBFile = [libLocation stringByAppendingString: @"/MobileRSS/rss.db"];
 
-		if (![[NSFileManager defaultManager] fileExistsAtPath: @"/var/root/Library/Preferences/MobileRSS" isDirectory: &isDir])
+		if (![[NSFileManager defaultManager] fileExistsAtPath: [libLocation stringByAppendingString: @"/MobileRSS"] isDirectory: &isDir])
 		{
 			// Ensure library directories exsist
-			[[NSFileManager defaultManager] createDirectoryAtPath: @"/var/root/Library/Preferences/MobileRSS" attributes: nil];
+			[[NSFileManager defaultManager] createDirectoryAtPath: [libLocation stringByAppendingString: @"/MobileRSS"] attributes: nil];
 		}
 
 		isDir = NO;
@@ -61,7 +82,7 @@ static NSRecursiveLock *lock;
 				[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
 			}
 
-			NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist"];
+			NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile: [libLocation stringByAppendingString: @"/com.google.code.mobile-rss.plist"]];
 
 			NSEnumerator *enumerator = [settingsDict keyEnumerator];
 			NSString *currKey;
@@ -99,29 +120,30 @@ static NSRecursiveLock *lock;
 		}
 
 		//Remove now non-needed 1.4.1 Pref file.
-		[[NSFileManager defaultManager] removeFileAtPath: @"/var/root/Library/Preferences/com.google.code.mobile-rss.plist" handler: nil];
+		[[NSFileManager defaultManager] removeFileAtPath: [libLocation stringByAppendingString: @"/com.google.code.mobile-rss.plist"] handler: nil];
 	}
+	*/
 	//End Check if 1.4.1 Prefs file exists
 	
 	//Check if LaunchDaemon entry exists
-	if (![[NSFileManager defaultManager] fileExistsAtPath: @"/Library/LaunchDaemons/com.google.code.mobile-rss.plist" isDirectory: NO])
+	/*if (![[NSFileManager defaultManager] fileExistsAtPath: @"/Library/LaunchDaemons/com.google.code.mobile-rss.plist" isDirectory: NO])
 	{
 		//HACK: It seems that Apple removed the NSFileManager copyPath:toPath:handler selector. Use system command.
-		NSString *cpCommand = @"/bin/cp /Applications/RSS.app/LaunchDaemon.plist /Library/LaunchDaemons/com.google.code.mobile-rss.plist";
+		NSString *cpCommand = [[[NSBundle mainBundle] bundlePath] stringByAppendingString: [@"/cp " stringByAppendingString: [[[NSBundle mainBundle] bundlePath] stringByAppendingString: @"/LaunchDaemon.plist /Library/LaunchDaemons/com.google.code.mobile-rss.plist"]]];
 		system([cpCommand UTF8String]);
 
-		cpCommand = @"/bin/cp /Applications/RSS.app/RSSDaemon /usr/local/sbin/RSSDaemon";
+		cpCommand = [[[NSBundle mainBundle] bundlePath] stringByAppendingString: [@"/cp " stringByAppendingString: [[[NSBundle mainBundle] bundlePath] stringByAppendingString: @"/RSSDaemon /usr/local/sbin/RSSDaemon"]]];
 		system([cpCommand UTF8String]);
-	}
+	}*/
 
 	//Check if Daemon is running
-	pid_t FoundPID = [self FindPID];
+	/*pid_t FoundPID = [self FindPID];
 
 	if (FoundPID == -1)
 	{
-		NSString *launchctlCmd = @"launchctl load /Library/LaunchDaemons/com.google.code.mobile-rss.plist";
+		NSString *launchctlCmd = @"launchctl load /Library/LaunchDaemons/com.codegenocide.mobilerss.plist";
 		system([launchctlCmd UTF8String]);
-	}
+	}*/
 
 	_numFeeds = 0;
 	totalUnread = 0;
@@ -167,11 +189,11 @@ static NSRecursiveLock *lock;
 		[db executeUpdate:@"create table feedItems (feedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text, itemDate text, itemDateConv text, itemLink text, itemDescrip text, hasViewed integer, dateAdded text)", nil];
 		[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
 	}
-	else
+	/*else
 	{
 		//DB Exists but make sure they have the newest table
 		[db executeUpdate:@"create table deletedItems (deletedItemsID INTEGER PRIMARY KEY, feedsID integer, itemTitle text)", nil];
-	}
+	}*/
 
 	mainView = [[UIView alloc] initWithFrame: rect];
 
@@ -290,7 +312,25 @@ static NSRecursiveLock *lock;
 
 - (void) clearRead
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+	
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -328,7 +368,25 @@ static NSRecursiveLock *lock;
 
 - (void) clearAll
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -383,7 +441,25 @@ static NSRecursiveLock *lock;
 
 - (void) markAllRead
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -402,7 +478,25 @@ static NSRecursiveLock *lock;
 
 - (void) markAllUnread
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -812,7 +906,25 @@ static NSRecursiveLock *lock;
 
 - (void)applicationWillTerminate
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 

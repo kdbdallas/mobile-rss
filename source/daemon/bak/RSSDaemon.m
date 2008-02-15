@@ -218,7 +218,7 @@
 
 						if ([_item objectForKey:@"ItemDates"] == nil || [_item objectForKey:@"ItemDates"] == NULL)
 						{
-							itemDateConv = [NSCalendarDate  date];
+							itemDateConv = [NSString stringWithFormat:@"%@", [NSCalendarDate  date]];
 						}
 						else
 						{
@@ -226,7 +226,7 @@
 							itemDateConv = [_itemDateConv description];
 						}
 
-						[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSCalendarDate  date], nil];
+						[db executeUpdate:@"insert into feedItems (feedsID, itemTitle, itemDate, itemDateConv, itemLink, itemDescrip, hasViewed, dateAdded) values (?, ?, ?, ?, ?, ?, ?, ?)", [_feed objectAtIndex: i], [_item objectForKey:@"ItemTitle"], [_item objectForKey:@"ItemDates"], itemDateConv, [_item objectForKey:@"ItemLinks"], [_item objectForKey:@"ItemDesc"], @"0", [NSString stringWithFormat:@"%@", [NSCalendarDate  date]], nil];
 					}
 				}
 				else
@@ -246,7 +246,7 @@
 		{
 			NSDate *_dateAdded = [_rs dateForColumn: @"dateAdded"];
 
-			NSTimeInterval _timeOld = [[NSCalendarDate date] timeIntervalSinceDate: _dateAdded];
+			NSTimeInterval _timeOld = [[NSCalendarDate  date] timeIntervalSinceDate: _dateAdded];
 
 			if (_timeOld > _KeepFeedsFor)
 			{

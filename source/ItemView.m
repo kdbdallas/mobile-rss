@@ -10,10 +10,10 @@
 	[self setRow: row];
 	[self setFeedsID: feedsID];
 	
-	mTransView = [[UITransitionView alloc] initWithFrame: rect];
+	mTransView = [[[UITransitionView alloc] initWithFrame: rect] autorelease];
 	[self addSubview: mTransView];
 	
-	navBar = [[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)];
+	navBar = [[[UINavigationBar alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 44.0f)] autorelease];
 	//[navBar showButtonsWithLeftTitle: @"Back" rightTitle:@"Next >>" leftBack: TRUE];
 	[navBar showButtonsWithLeftTitle: @"Back" rightTitle:nil leftBack: TRUE];
     [navBar setBarStyle: 3];
@@ -24,37 +24,33 @@
     [botNavBar setBarStyle: 3];
 	[botNavBar setDelegate: self];
 
-	UIImage *btnImage = [UIImage applicationImageNamed:@"internet.png"];
 	UIPushButton *pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(268.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: NO];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"internet.png"] forState:0];  //up state
 	[pushButton addTarget: self action: @selector(visitLink) forEvents: (1<<6)];
 	[navBar addSubview: pushButton];
 
-	btnImage = [UIImage applicationImageNamed:@"delete.png"];
 	pushButton = [[[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO] autorelease];
 	[pushButton setFrame: CGRectMake(0.0, 0.0, 50.0, 44.0)];
 	[pushButton setDrawsShadow: YES];
 	[pushButton setEnabled:YES];
 	[pushButton setStretchBackground:NO];
-	[pushButton setBackground:btnImage forState:0];  //up state
+	[pushButton setBackground:[UIImage applicationImageNamed:@"delete.png"] forState:0];  //up state
 	[pushButton addTarget: self action: @selector(deleteItemQ) forEvents: (1<<6)];
 	[botNavBar addSubview: pushButton];
 
 	direcBtns = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(220.0f, 8.0f, 88.0f, 30.0f) withStyle:2 withItems:NULL] autorelease];
-	UIImage *btnUpImage = [UIImage applicationImageNamed:@"arrowup.png"];
-	UIImage *btnDownImage = [UIImage applicationImageNamed:@"arrowdown.png"];
-	[direcBtns insertSegment:0 withImage:btnUpImage animated:FALSE];
-	[direcBtns insertSegment:1 withImage:btnDownImage animated:FALSE];
+	[direcBtns insertSegment:0 withImage:[UIImage applicationImageNamed:@"arrowup.png"] animated:FALSE];
+	[direcBtns insertSegment:1 withImage:[UIImage applicationImageNamed:@"arrowdown.png"] animated:FALSE];
 	[direcBtns setDelegate:self];
 	[botNavBar addSubview:direcBtns];
 
 	[self addSubview: botNavBar];
 	
-	scroller = [[UIScroller alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)];
+	scroller = [[[UIScroller alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)] autorelease];
 	[scroller setScrollingEnabled: YES];
 	[scroller setAdjustForContentSizeChange: YES];
 	[scroller setClipsSubviews: YES];
@@ -63,7 +59,7 @@
 
 	[self addSubview: scroller];
 	
-	web = [[UIWebView alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)];
+	web = [[[UIWebView alloc] initWithFrame: CGRectMake(0.0f, 22.0f, 320.0f, rect.size.height - 66.0f)] autorelease];
 	[web setTilingEnabled: YES];
 	[web setTileSize: CGSizeMake(320.f,1000)];
 	[web setDelegate: self];
@@ -88,7 +84,28 @@
     [textView setEditable:NO];
     [textView setTextSize:15];*/
 
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[NSProcessInfo alloc] init];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -260,7 +277,7 @@
 - (void) deleteItemQ
 {
 	// Alert sheet attached to bootom of Screen.
-	UIAlertSheet *alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0, 240, 320, 240)];
+	UIAlertSheet *alertSheet = [[[UIAlertSheet alloc] initWithFrame:CGRectMake(0, 240, 320, 240)] autorelease];
 	[alertSheet addButtonWithTitle:@"Delete Feed Item"];
 	[alertSheet addButtonWithTitle:@"Cancel"];
 	[alertSheet setDelegate:self];
@@ -275,7 +292,28 @@
 
 - (void) deleteItem
 {
-	NSString *DBFile = @"/var/root/Library/Preferences/MobileRSS/rss.db";
+	NSProcessInfo *procInfo = [[[NSProcessInfo alloc] init] autorelease];
+	firmwareVersion = [[procInfo operatingSystemVersionString] retain];
+	
+	BOOL isDir = YES;
+
+	if ([firmwareVersion isEqualToString: @"Version 1.1.3 (Build 4A93)"])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath: @"/var/mobile/Library/Preferences" isDirectory: &isDir])
+		{
+			libLocation = @"/var/mobile/Library/Preferences/";
+		}
+		else
+		{
+			libLocation = @"/var/root/Library/Preferences/";
+		}
+	}
+	else
+	{
+		libLocation = @"/var/root/Library/Preferences/";
+	}
+	
+	NSString *DBFile = [libLocation stringByAppendingString: @"MobileRSS/rss.db"];
 
 	db = [FMDatabase databaseWithPath: DBFile];
 
@@ -384,7 +422,7 @@
 
 - (void) dealloc
 {
-	[navBar release];
+	//[navBar release];
 	//[textView release];
 	[super dealloc];
 }

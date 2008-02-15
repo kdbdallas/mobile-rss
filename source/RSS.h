@@ -54,6 +54,8 @@
 	UIAlertSheet *alertSheetMarkAll;
 	UITextLabel *_title;
 	UIAlertSheet *clearAlertSheet;
+	NSString *libLocation;
+	NSString *firmwareVersion;
 }
 
 - (void) processPlistWithPath:(id)param;
